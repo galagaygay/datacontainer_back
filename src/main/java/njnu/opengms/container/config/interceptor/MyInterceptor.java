@@ -26,12 +26,11 @@ public class MyInterceptor implements HandlerInterceptor {
         long startTime = (long) request.getAttribute("startTime");
         request.removeAttribute("startTime");
         long endTime = System.currentTimeMillis();
-        System.out.println("本次请求时间为：" + (endTime - startTime) + "ms");
         request.setAttribute("handling Time:", endTime - startTime);
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        System.out.println("afterCompletion");
+        System.out.println("handlingTime:" + request.getAttribute("handling Time:") + "ms");
     }
 }

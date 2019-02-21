@@ -110,12 +110,13 @@ public class MappingMethodServiceImp implements BaseService<MappingMethod, AddMa
 
     @Override
     public void update(String id, UpdateMappingMethodDTO updateDTO) {
-        MappingMethod mappingMethod = mappingMethodRepository.findById(id).get();
-        if (mappingMethod != null) {
+        MappingMethod mappingMethod = mappingMethodRepository.findById(id).orElseGet(() -> {
+            System.out.println("有人乱查数据库！！");
+            throw new MyException(ResultEnum.NO_OBJECT);
+        });
+
             BeanUtils.copyProperties(updateDTO, mappingMethod);
             mappingMethodRepository.save(mappingMethod);
-        } else {
-            throw new MyException(ResultEnum.NO_OBJECT);
-        }
+
     }
 }

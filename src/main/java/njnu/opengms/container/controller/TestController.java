@@ -4,6 +4,9 @@ import com.mongodb.BasicDBObject;
 import com.ngis.udx.Transfer;
 import com.ngis.udx.data.UdxData;
 import com.ngis.udx.data.UdxNode;
+import com.ngis.udx.data.kernels.UdxKernelString;
+import com.ngis.udx.data.kernels.UdxKernelVector3;
+import com.ngis.udx.data.structure.Vector3d;
 import com.ngis.udx.schema.UdxSchema;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.AsyncTaskComponent;
@@ -14,6 +17,7 @@ import njnu.opengms.container.service.MappingMethodServiceImp;
 import njnu.opengms.container.service.SchemaDocServiceImp;
 import njnu.opengms.container.utils.ResultUtils;
 import org.dom4j.DocumentException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -116,5 +120,37 @@ public class TestController {
         List<SchemaDoc> list1 = mongoTemplate.find(query, SchemaDoc.class);
         return ResultUtils.success(list1);
     }
+
+    @RequestMapping (value = "/test8", method = RequestMethod.GET)
+    public JsonResult test8() throws IOException, DocumentException {
+        UdxSchema pepoleSchema = Transfer.loadSchemaFromXmlFile(new File("C:\\Users\\sun_liber\\Desktop\\d\\schema\\pepole.xml"));
+        UdxData pepoleData = Transfer.generate(pepoleSchema);
+
+        UdxNode name = pepoleData.getNodeByName("名称");
+        ((UdxKernelString) name.getUdxKernel()).setValue("sunlingzhi");
+        UdxNode sanwei = pepoleData.getNodeByName("三围");
+        ((UdxKernelVector3) sanwei.getUdxKernel()).setValue(new Vector3d(1, 2, 3));
+
+
+        UdxSchema connectionSchema = Transfer.loadSchemaFromXmlFile(new File("C:\\Users\\sun_liber\\Desktop\\d\\schema\\connection.xml"));
+        UdxData connectionData = Transfer.generate(connectionSchema);
+        UdxNode tel = connectionData.getNodeByName("电话");
+        ((UdxKernelString) tel.getUdxKernel()).setValue("18840840241");
+
+        UdxSchema pcSchema = Transfer.loadSchemaFromXmlFile(new File("C:\\Users\\sun_liber\\Desktop\\d\\schema\\pc.xml"));
+        UdxData pcData = Transfer.generate(pcSchema);
+
+        pcData.getNodeByName("名称").setUdxKernel(name.getUdxKernel());
+        pcData.getNodeByName("三围").setUdxKernel(sanwei.getUdxKernel());
+        pcData.getNodeByName("电话").setUdxKernel(tel.getUdxKernel());
+
+        UdxData p = new UdxData();
+
+
+        BeanUtils.copyProperties(connectionData, p);
+
+        return ResultUtils.success(pcData);
+    }
+
 
 }

@@ -54,9 +54,50 @@ public class SchemaDocController implements BaseController<SchemaDoc, AddSchemaD
         return this.schemaDocServiceImp;
     }
 
+    @ApiOperation (value = "获取与指定id对应的schemaDoc相关的资源", notes = "包括映射、重构资源")
+    @RequestMapping (value = "/{id}/relatedResources", method = RequestMethod.GET)
+    public JsonResult getRelatedResources(@PathVariable ("id") String id) {
+        List<MappingMethodVO> mappingMethodVOList = new ArrayList<>();
+        mappingMethodRepository.findBySupportedUdxSchema(id).forEach(el -> {
+            MappingMethodVO vo = new MappingMethodVO();
+            BeanUtils.copyProperties(el, vo);
+            mappingMethodVOList.add(vo);
+        });
+
+        List<RefactorMethodVO> refactorMethodVOList = new ArrayList<>();
+        refactorMethodRepository.findBySupportedUdxSchemas(id).forEach(el -> {
+            RefactorMethodVO vo = new RefactorMethodVO();
+            BeanUtils.copyProperties(el, vo);
+            refactorMethodVOList.add(vo);
+        });
+        JSONObject object = new JSONObject();
+        object.put("map", mappingMethodVOList);
+        object.put("refactor", refactorMethodVOList);
+        return ResultUtils.success(object);
+    }
+
+
+    @ApiOperation (value = "获取点击量前10高的SchemaDoc", notes = "目前这里不是用的点击量，是按照创建事件进行排序的")
+    @RequestMapping (value = "/getTop10", method = RequestMethod.GET)
+    public JsonResult getTop10() {
+        //TODO 目前这里不是用的点击量，是按照创建事件进行排序的
+        return ResultUtils.success(schemaDocServiceImp.getTop10());
+    }
+
+    @ApiOperation (value = "根据name查询，获取SchemaDoc列表")
+    @RequestMapping (value = "/findByNameContains", method = RequestMethod.GET)
+    public JsonResult getSchemaDocByName(@RequestParam ("name") String name) {
+        return ResultUtils.success(schemaDocServiceImp.findByNameContains(name));
+    }
+
+    @ApiOperation (value = "由UdxSchema生成对应的同构UdxData")
+    @RequestMapping (value = "/generate", method = RequestMethod.POST)
+    public JsonResult generateUDXData(@RequestBody UdxSchema udxSchema) {
+        return ResultUtils.success(Transfer.generate(udxSchema));
+    }
 
     @ApiOperation (value = "上传Schema文件得到Schema", notes = "Schema文件可以为json或者xml文件")
-    @RequestMapping (value = "/getSchemaFromFile", method = RequestMethod.POST)
+    @RequestMapping (value = "/getSchema", method = RequestMethod.POST)
     public JsonResult getSchema(@RequestParam ("file") MultipartFile file) throws IOException, DocumentException {
         String suffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
         File fileNormal = File.createTempFile(UUID.randomUUID().toString(), suffix);
@@ -71,49 +112,4 @@ public class SchemaDocController implements BaseController<SchemaDoc, AddSchemaD
         }
         return ResultUtils.success(udxSchema);
     }
-
-    @ApiOperation (value = "获取与指定id的schema相关的资源", notes = "包括映射、重构实体")
-    @RequestMapping (value = "/related", method = RequestMethod.GET)
-    public JsonResult getRelated(@RequestParam ("id") String id) {
-        List<MappingMethodVO> mappingMethodVOS = new ArrayList<>();
-        mappingMethodRepository.findBySupportedUdxSchema(id).forEach(el -> {
-            MappingMethodVO vo = new MappingMethodVO();
-            BeanUtils.copyProperties(el, vo);
-            mappingMethodVOS.add(vo);
-        });
-
-        List<RefactorMethodVO> refactorMethodVOS = new ArrayList<>();
-        refactorMethodRepository.findBySupportedUdxSchemas(id).forEach(el -> {
-            RefactorMethodVO vo = new RefactorMethodVO();
-            BeanUtils.copyProperties(el, vo);
-            refactorMethodVOS.add(vo);
-        });
-        JSONObject object = new JSONObject();
-        object.put("maps", mappingMethodVOS);
-        object.put("refactors", refactorMethodVOS);
-        return ResultUtils.success(object);
-    }
-
-
-    @ApiOperation (value = "获取与指定id的schemaDoc相关的UdxSchema", notes = "")
-    @RequestMapping (value = "/{id}/getSchema", method = RequestMethod.GET)
-    public JsonResult getUdxSchema(@PathVariable ("id") String id) {
-        return ResultUtils.success(schemaDocServiceImp.get(id).getUdxSchema());
-    }
-
-
-    @ApiOperation (value = "获取点击量前10高的SchemaDoc", notes = "")
-    @RequestMapping (value = "/getTop10", method = RequestMethod.GET)
-    public JsonResult getTop10() {
-        //TODO 目前这里不是用的点击量，是按照创建事件进行排序的
-        return ResultUtils.success(schemaDocServiceImp.getTop10());
-    }
-
-    @ApiOperation (value = "获取name包含对应内容的SchemaDoc列表", notes = "")
-    @RequestMapping (value = "/getSchemaDocByName", method = RequestMethod.GET)
-    public JsonResult getSchemaDocByName(@RequestParam ("name") String name) {
-        return ResultUtils.success(schemaDocServiceImp.getSchemaDocByName(name));
-    }
-
-
 }

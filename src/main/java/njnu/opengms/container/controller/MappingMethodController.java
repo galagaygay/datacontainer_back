@@ -1,8 +1,6 @@
 package njnu.opengms.container.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.ngis.udx.Transfer;
-import com.ngis.udx.schema.UdxSchema;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import njnu.opengms.container.bean.JsonResult;
@@ -18,7 +16,10 @@ import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.vo.MappingMethodVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,16 +46,11 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
         return this.mappingMethodServiceImp;
     }
 
-    @RequestMapping (value = "/generate", method = RequestMethod.POST)
-    public JsonResult generateUDXData(@RequestBody UdxSchema udxSchema) {
-        return ResultUtils.success(Transfer.generate(udxSchema));
-    }
-
     @ApiImplicitParams ({
             @ApiImplicitParam (name = "id", value = "数据映射对应的id"),
             @ApiImplicitParam (name = "callType", value = "可选值为src2udx,udx2src"),
             @ApiImplicitParam (name = "input", value = "上传文件的路径"),
-            @ApiImplicitParam (name = "output", value = "下载文件的名字"),
+            @ApiImplicitParam (name = "output", value = "下载文件的名称"),
     })
     @RequestMapping (value = "/invoke", method = RequestMethod.GET)
     public JsonResult invoke(@RequestParam ("id") String id,
@@ -67,13 +63,15 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
         String position = mappingMethod.getPosition();
         //调用方法
         String uid = UUID.randomUUID().toString();
-        ProcessResponse processResponse = MethodInvokeUtils.computeMap(upload + File.separator + position, callType, upload + File.separator + input, upload + File.separator + "run" + File.separator + uid + File.separator + output);
-
+        String basePath = upload + File.separator + position;
+        String inputLocal = upload + File.separator + input;
+        String outputLocal = upload + File.separator + "online_call_files" + File.separator + uid + File.separator + output;
+        ProcessResponse processResponse = MethodInvokeUtils.computeMap(basePath, callType, inputLocal, outputLocal);
         //返回cmd命令执行情况，以及输出数据路径
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processResponse", processResponse);
         if (processResponse.getFlag()) {
-            jsonObject.put("output", "run" + File.separator + uid + File.separator + output);
+            jsonObject.put("output", "online_call_files" + File.separator + uid + File.separator + output);
         } else {
             jsonObject.put("output", null);
         }

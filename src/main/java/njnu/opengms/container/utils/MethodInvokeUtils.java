@@ -41,7 +41,6 @@ public class MethodInvokeUtils {
         } else if ("udx2src".equals(callType)) {
             cmd += " -w -u " + input + " -f " + output;
         }
-
         return ProcessUtils.StartProcess(basePath, cmd);
     }
 

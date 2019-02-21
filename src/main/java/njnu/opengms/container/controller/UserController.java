@@ -34,7 +34,6 @@ public class UserController implements BaseController<User, AddUserDTO, Object, 
         return userServiceImp;
     }
 
-
     @RequestMapping (value = "/login", method = RequestMethod.POST)
     public JsonResult doLogin(@RequestBody User userIn) {
         User user = userServiceImp.findUserByUserName(userIn.getUsername());
@@ -55,6 +54,4 @@ public class UserController implements BaseController<User, AddUserDTO, Object, 
         String[] permission = {"super_admin", "admin"};
         return ResultUtils.success(permission);
     }
-
-
 }

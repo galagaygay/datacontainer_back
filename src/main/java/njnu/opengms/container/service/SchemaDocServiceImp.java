@@ -55,11 +55,6 @@ public class SchemaDocServiceImp implements BaseService<SchemaDoc, AddSchemaDocD
         schemaDocRepository.deleteById(id);
     }
 
-    /**
-     * @param findDTO
-     *
-     * @return
-     */
     @Override
     public Page<SchemaDocVO> list(FindSchemaDocDTO findDTO) {
         SchemaDoc schemaDoc = new SchemaDoc();
@@ -114,31 +109,27 @@ public class SchemaDocServiceImp implements BaseService<SchemaDoc, AddSchemaDocD
         return schemaDocRepository.count();
     }
 
+    @Override
+    public void update(String id, UpdateSchemaDocDTO updateDTO) {
+        SchemaDoc schemaDoc = schemaDocRepository.findById(id).orElseGet(() -> {
+            System.out.println("有人乱查数据库！！");
+            throw new MyException(ResultEnum.NO_OBJECT);
+        });
+        BeanUtils.copyProperties(updateDTO, schemaDoc);
+        schemaDocRepository.save(schemaDoc);
+    }
+
     public List<SchemaDoc> getTop10() {
         BasicDBObject dbObject = new BasicDBObject();
         BasicDBObject fieldsObject = new BasicDBObject();
+        //指定只返回name字段，注意默认会返回id字段
         fieldsObject.put("name", 1);
         Query query = new BasicQuery(dbObject.toJson(), fieldsObject.toJson());
         query.with(PageRequest.of(0, 10, Sort.Direction.ASC, "createDate"));
         return mongoTemplate.find(query, SchemaDoc.class);
     }
 
-    public List<SchemaDoc> getSchemaDocByName(String name) {
+    public List<SchemaDoc> findByNameContains(String name) {
         return schemaDocRepository.findByNameContains(name);
-    }
-
-    /**
-     * @param id
-     * @param updateDTO
-     */
-    @Override
-    public void update(String id, UpdateSchemaDocDTO updateDTO) {
-        SchemaDoc schemaDoc = schemaDocRepository.findById(id).get();
-        if (schemaDoc != null) {
-            BeanUtils.copyProperties(updateDTO, schemaDoc);
-            schemaDocRepository.save(schemaDoc);
-        } else {
-            throw new MyException(ResultEnum.NO_OBJECT);
-        }
     }
 }

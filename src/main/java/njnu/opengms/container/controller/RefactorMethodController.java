@@ -17,7 +17,6 @@ import njnu.opengms.container.utils.MethodInvokeUtils;
 import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.vo.RefactorMethodVO;
 import org.apache.commons.io.FileUtils;
-import org.dom4j.DocumentException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -54,7 +53,7 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
             @ApiImplicitParam (name = "id", value = "数据重构对应的id"),
             @ApiImplicitParam (name = "method", value = "数据重构中调用的方法"),
             @ApiImplicitParam (name = "input", value = "上传文件的路径数组"),
-            @ApiImplicitParam (name = "output", value = "下载文件的名字数组"),
+            @ApiImplicitParam (name = "output", value = "下载文件的名称数组"),
     })
     @RequestMapping (value = "/invoke", method = RequestMethod.GET)
     public JsonResult invoke(@RequestParam ("id") String id,
@@ -65,23 +64,19 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
         String position = refactorMethod.getPosition();
 
-        List<String> inputList = new ArrayList<>();
+        String basePath = upload + File.separator + position;
+        List<String> inputLocal = new ArrayList<>();
         for (String s : input) {
-            inputList.add(upload + File.separator + s);
+            inputLocal.add(upload + File.separator + s);
         }
-        List<String> outputList = new ArrayList<>();
+        List<String> outputLocal = new ArrayList<>();
         List<String> out = new ArrayList<>();
         for (String s : output) {
             String uuid = UUID.randomUUID().toString();
-            outputList.add(upload + File.separator + "run" + File.separator + uuid + File.separator + s);
-            out.add("run" + File.separator + uuid + File.separator + s);
-
+            outputLocal.add(upload + File.separator + "online_call_files" + File.separator + uuid + File.separator + s);
+            out.add("online_call_files" + File.separator + uuid + File.separator + s);
         }
-        ProcessResponse processResponse = MethodInvokeUtils.computeRefactor(
-                upload + File.separator + position,
-                method,
-                inputList,
-                outputList);
+        ProcessResponse processResponse = MethodInvokeUtils.computeRefactor(basePath, method, inputLocal, outputLocal);
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processResponse", processResponse);
@@ -92,7 +87,7 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
             }
             jsonObject.put("outputs", jsonArray);
         } else {
-            jsonObject.put("output", null);
+            jsonObject.put("outputs", null);
         }
         return ResultUtils.success(jsonObject);
 
@@ -100,7 +95,7 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
 
     @ApiOperation (value = "获取重构库中包含的方法", notes = "注意这里返回的是xml字符串在前端可以考虑xml2json或者直接用dom解析")
     @RequestMapping (value = "/{id}/getMethod", method = RequestMethod.GET)
-    public JsonResult invoke(@PathVariable ("id") String id) throws IOException, DocumentException {
+    public JsonResult invoke(@PathVariable ("id") String id) throws IOException {
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
         String position = refactorMethod.getPosition();
         return ResultUtils.success(FileUtils.readFileToString(new File(upload + File.separator + position + File.separator + "methods.xml"), "utf-8"));

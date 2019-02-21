@@ -34,7 +34,7 @@ public class UdxData {
         return null;
     }
 
-    public UdxNode getNode(UdxNode udxNode, String nodeName) {
+    private UdxNode getNode(UdxNode udxNode, String nodeName) {
         if (udxNode.getName().equals(nodeName)) {
             return udxNode;
         }

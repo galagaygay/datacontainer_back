@@ -1,9 +1,5 @@
 package com.ngis.test;
 
-import org.dom4j.DocumentException;
-
-import java.io.IOException;
-
 /**
  * @ClassName Main
  * @Description todo
@@ -13,6 +9,8 @@ import java.io.IOException;
  */
 
 public class Main {
-    public static void main(String[] args) throws IOException, DocumentException {
+    public static void main(String[] args) {
+        Ha ha = new Ha();
+        System.out.println(ha.getCount());
     }
 }

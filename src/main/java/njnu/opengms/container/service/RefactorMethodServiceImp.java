@@ -107,12 +107,14 @@ public class RefactorMethodServiceImp implements BaseService<RefactorMethod, Add
 
     @Override
     public void update(String id, UpdateRefactorMethodDTO updateDTO) {
-        RefactorMethod refactorMethod = refactorMethodRepository.findById(id).get();
-        if (refactorMethod != null) {
+        RefactorMethod refactorMethod = refactorMethodRepository.findById(id).orElseGet(() -> {
+            System.out.println("有人乱查数据库！！");
+            throw new MyException(ResultEnum.NO_OBJECT);
+        });
+
             BeanUtils.copyProperties(updateDTO, refactorMethod);
             refactorMethodRepository.save(refactorMethod);
-        } else {
-            throw new MyException(ResultEnum.NO_OBJECT);
-        }
+
+
     }
 }
