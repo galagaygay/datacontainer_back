@@ -70,9 +70,9 @@ public class DataResourceController {
         return ResultUtils.success(dataResourceService.listByDataItemId(dataItemId));
     }
 
-    @RequestMapping (value = "/listByDataItemFileName/{dataItemFileName}", method = RequestMethod.GET)
+    @RequestMapping (value = "/listContainsDataItemFileName/{dataItemFileName}", method = RequestMethod.GET)
     JsonResult listByDataItemName(@PathVariable ("dataItemFileName") String dataItemFileName) {
-        return ResultUtils.success(dataResourceService.listByDataItemName(dataItemFileName));
+        return ResultUtils.success(dataResourceService.listContainsDataItemFileName(dataItemFileName));
     }
 
     /******/

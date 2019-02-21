@@ -86,7 +86,7 @@ public class DataResourceService {
         return dataResourceRepository.findByMdlId(mdlId);
     }
 
-    public List<DataResource> listByDataItemName(String dataItemFileName) {
+    public List<DataResource> listContainsDataItemFileName(String dataItemFileName) {
         return dataResourceRepository.findByFileNameContains(dataItemFileName);
     }
 }
