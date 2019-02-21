@@ -6,17 +6,18 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 /**
- * @ClassName PepoleCofig
+ * @ClassName GeoserverConfig
  * @Description todo
  * @Author sun_liber
- * @Date 2018/12/10
+ * @Date 2019/2/21
  * @Version 1.0.0
  */
 @Component
-@PropertySource (value = "classpath:myProperties/people.properties")
-@ConfigurationProperties (prefix = "my.class")
+@PropertySource (value = "classpath:application.properties")
+@ConfigurationProperties (prefix = "geoserver")
 @Data
-public class People {
-    String name;
-    String email;
+public class GeoserverConfig {
+    private String basicURL;
+    private String username;
+    private String password;
 }

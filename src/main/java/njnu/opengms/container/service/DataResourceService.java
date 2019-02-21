@@ -29,7 +29,6 @@ public class DataResourceService {
     @Autowired
     DataResourceRepository dataResourceRepository;
 
-
     public void save(String id, UpdateDataResourceDTO updateDataResourceDTO) {
         DataResource dataResource = dataResourceRepository.findById(id).orElseGet(() -> {
             System.out.println("有人乱查数据库！！");
@@ -82,11 +81,11 @@ public class DataResourceService {
         return dataResourceRepository.findByDataItemId(dataItemId);
     }
 
-    public List<DataResource> listByMdlId(String mdlId) {
-        return dataResourceRepository.findByMdlId(mdlId);
-    }
-
     public List<DataResource> listContainsDataItemFileName(String dataItemFileName) {
         return dataResourceRepository.findByFileNameContains(dataItemFileName);
+    }
+
+    public List<DataResource> listByMdlId(String mdlId) {
+        return dataResourceRepository.findByMdlId(mdlId);
     }
 }

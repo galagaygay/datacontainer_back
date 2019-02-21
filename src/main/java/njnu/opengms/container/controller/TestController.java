@@ -10,7 +10,6 @@ import com.ngis.udx.data.structure.Vector3d;
 import com.ngis.udx.schema.UdxSchema;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.AsyncTaskComponent;
-import njnu.opengms.container.component.People;
 import njnu.opengms.container.pojo.SchemaDoc;
 import njnu.opengms.container.repository.SchemaDocRepository;
 import njnu.opengms.container.service.MappingMethodServiceImp;
@@ -43,8 +42,6 @@ import java.util.List;
 @ApiIgnore
 public class TestController {
 
-    @Autowired
-    People people;
 
     @Autowired
     MongoTemplate mongoTemplate;

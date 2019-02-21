@@ -16,7 +16,10 @@ public enum ResultEnum {
     USER_PASSWORD_NOT_MATCH(-7, "账户名和密码不匹配"),
 
     UPLOAD_TYPE_ERROR(-8, "上传Type存在问题"),
-    TRANSFER_UDX_ERROR(-9, "UDX转换时，支持的文件类型仅仅有json与xml");
+    TRANSFER_UDX_ERROR(-9, "UDX转换时，支持的文件类型仅仅有json与xml"),
+
+
+    REMOTE_SERVICE_ERROR(-10, "远程服务调用出错");
 
     private Integer code;
 
