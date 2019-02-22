@@ -3,9 +3,7 @@ package njnu.opengms.container.utils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -19,7 +17,7 @@ import java.util.zip.ZipOutputStream;
  * @Version 1.0.0
  */
 public class ZipUtils {
-    public static void zipFiles(File zip, String path, List<File> srcFiles) throws IOException {
+    public static void zipFiles(File zip, String path, File... srcFiles) throws IOException {
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip));
         zipFile(out, path, srcFiles);
         out.close();
@@ -27,7 +25,7 @@ public class ZipUtils {
     }
 
 
-    public static void zipFile(ZipOutputStream out, String path, List<File> srcFiles) throws FileNotFoundException {
+    public static void zipFile(ZipOutputStream out, String path, File... srcFiles) throws FileNotFoundException {
         path = path.replaceAll("\\*", "/");
         if (("").equals(path)) {
             path += "";
@@ -36,20 +34,20 @@ public class ZipUtils {
         }
         byte[] buf = new byte[1024];
         try {
-            for (int i = 0; i < srcFiles.size(); i++) {
-                if (srcFiles.get(i).isDirectory()) {
-                    File[] files = srcFiles.get(i).listFiles();
-                    String srcPath = srcFiles.get(i).getName();
+            for (int i = 0; i < srcFiles.length; i++) {
+                if (srcFiles[i].isDirectory()) {
+                    File[] files = srcFiles[i].listFiles();
+                    String srcPath = srcFiles[i].getName();
                     srcPath = srcPath.replaceAll("\\*", "/");
                     if (!srcPath.endsWith("/")) {
                         srcPath += "/";
                     }
                     out.putNextEntry(new ZipEntry(path + srcPath));
-                    zipFile(out, path + srcPath, Arrays.asList(files));
+                    zipFile(out, path + srcPath, files);
                 } else {
-                    FileInputStream in = new FileInputStream(srcFiles.get(i));
-                    System.out.println(path + srcFiles.get(i).getName());
-                    out.putNextEntry(new ZipEntry(path + srcFiles.get(i).getName()));
+                    FileInputStream in = new FileInputStream(srcFiles[i]);
+                    System.out.println(path + srcFiles[i].getName());
+                    out.putNextEntry(new ZipEntry(path + srcFiles[i].getName()));
                     int len;
                     while ((len = in.read(buf)) > 0) {
                         out.write(buf, 0, len);
@@ -145,3 +143,5 @@ public class ZipUtils {
         return StringUtils.trimToEmpty(suffix);
     }
 }
+
+

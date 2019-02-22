@@ -7,7 +7,6 @@ import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
 import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
-import njnu.opengms.container.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @ClassName DataResourceController
@@ -94,15 +97,14 @@ public class DataResourceController {
     @RequestMapping (value = "/downloadAll/{dataItemId}", method = RequestMethod.GET)
     ResponseEntity<InputStreamResource> downloadAll(@PathVariable ("dataItemId") String dataItemId) throws IOException {
         List<DataResource> list = dataResourceService.listByDataItemId(dataItemId);
-        List<File> files = new ArrayList<>();
+        List<File> fileList = new ArrayList<>();
+        List<String> renameList = new ArrayList<>();
         list.forEach(el -> {
-            el.getFileName();
-            el.getSuffix();
-            el.getSourceStoreId();
-            files.add(new File(staticPath + File.separator + "store_dataResource_files" + File.separator + el.getSourceStoreId()));
+            fileList.add(new File(staticPath + File.separator + "store_dataResource_files" + File.separator + el.getSourceStoreId()));
+            renameList.add(new String(el.getFileName() + "." + el.getSuffix()));
         });
         File temp = File.createTempFile("zipFiles", "zip");
-        ZipUtils.zipFiles(temp, "", files);
+        zipFiles(temp, fileList, renameList);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
         headers.add("Content-Disposition", "attachment;filename=zipFiles.zip");
@@ -123,6 +125,28 @@ public class DataResourceController {
     /*****/
     JsonResult listByMdlId(@PathVariable ("mdlId") String mdlId) {
         return ResultUtils.success(dataResourceService.listByMdlId(mdlId));
+    }
+
+
+    public void zipFiles(File zip, List<File> srcFiles, List<String> renameList) throws IOException {
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip));
+        byte[] buf = new byte[1024];
+        try {
+            for (int i = 0; i < srcFiles.size(); i++) {
+                FileInputStream in = new FileInputStream(srcFiles.get(i));
+                out.putNextEntry(new ZipEntry(renameList.get(i)));
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+                out.closeEntry();
+                in.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        out.close();
+        System.out.println("*****************压缩完毕*******************");
     }
 
 }
