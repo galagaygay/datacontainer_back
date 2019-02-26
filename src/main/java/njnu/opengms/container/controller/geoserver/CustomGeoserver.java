@@ -1,154 +1,164 @@
-//package njnu.opengms.container.controller.geoserver;
-//
-//import com.alibaba.fastjson.JSONObject;
-//import io.swagger.annotations.ApiOperation;
-//import njnu.opengms.container.bean.JsonResult;
-//import njnu.opengms.container.component.GeoserverConfig;
-//import njnu.opengms.container.enums.ResultEnum;
-//import njnu.opengms.container.exception.MyException;
-//import njnu.opengms.container.utils.ResultUtils;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.*;
-//import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.client.RestTemplate;
-//import org.springframework.web.multipart.MultipartFile;
-//
-//import java.util.HashMap;
-//
-///**
-// * @ClassName CustomGeoserver
-// * @Description todo
-// * @Author sun_liber
-// * @Date 2019/2/21
-// * @Version 1.0.0
-// */
-//
-//
-//@RestController
-//@RequestMapping ("/custom_geoserver")
-//public class CustomGeoserver {
-//
-//    @Autowired
-//    GeoserverConfig geoserverConfig;
-//
-//    @Autowired
-//    RestTemplate restTemplate;
-//
-//
-//    @ApiOperation (value = "List all layers", notes = "")
-//    @RequestMapping (value = "/layers", method = RequestMethod.GET)
-//    public JsonResult listLayers() throws Exception {
-//        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/layers.json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    @ApiOperation (value = "get a certain layer description", notes = "注意这里的layer要加前缀，及workspace:layer,默认workspace是datacontainer")
-//    @RequestMapping (value = "/layers/{workspaceAndLauer}", method = RequestMethod.GET)
-//    JsonResult listLayer(@PathVariable ("workspaceAndLauer") String workspaceAndLauer) {
-//        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/layers/" + workspaceAndLauer + ".json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    /***************************************/
-//    /*********shapefile*********************/
-//    @ApiOperation(value = "List all data stores in certain workspaces", notes = "注意我们这里将工作区给定死了为datacontainer")
-//    @RequestMapping(value = "/datacontainer/datastores", method = RequestMethod.GET)
-//    JsonResult listDataStores(){
-//        String url=geoserverConfig.getBasicURL()+"/geoserver/rest/workspaces/datacontainer/datastores.json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    @ApiOperation(value = "get a certain data store", notes = "注意我们这里将工作区给定死了为datacontainer")
-//    @RequestMapping(value = "/datacontainer/datastores/{datastore}", method = RequestMethod.GET)
-//    JsonResult listDataStore(@PathVariable("datastore") String datastore) throws Exception {
-//        String url=geoserverConfig.getBasicURL()+ "/geoserver/rest/workspaces/datacontainer/datastores/"
-//                + datastore
-//                + ".json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    @ApiOperation(value = "get  features list", notes = "注意我们这里将工作区给定死了为datacontainer")
-//    @RequestMapping(value = "/datacontainer/datastores/{datastore}/featuretypes", method = RequestMethod.GET)
-//    JsonResult listFeatureTypes(@PathVariable("datastore") String datastore) throws Exception {
-//        String url=geoserverConfig.getBasicURL()+ "/geoserver/rest/workspaces/datacontainer/datastores/"
-//                + datastore
-//                +"/featuretypes.json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    @ApiOperation(value = "get  a features ", notes = "注意我们这里将工作区给定死了为datacontainer")
-//    @RequestMapping(value = "/datacontainer/datastores/{datastore}/featuretypes/{featureType}", method = RequestMethod.GET)
-//    JsonResult listFeatureTypes(@PathVariable("datastore") String datastore,
-//                                @PathVariable("featureType") String featureType) throws Exception {
-//        String url=geoserverConfig.getBasicURL()+ "/geoserver/rest/workspaces/datacontainer/datastores/"
-//                + datastore
-//                +"/featuretypes"+featureType+".json";
-//        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
-//        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-//            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
-//        }
-//        return ResultUtils.success(responseEntity.getBody());
-//    }
-//
-//    @RequestMapping(value = "/workspaces/datacontainer/datastores/{datastore}/{method}.shp", method = RequestMethod.POST)
-//    JsonResult createDataStoresByUpload( @PathVariable("datastore") String datastore,
-//                                                   @PathVariable("method") String method,
-//                                                   @RequestParam("ip") String ip,
-//                                                   @RequestParam("file") MultipartFile file) throws Exception {
-//        String url="http://" + ip + ":" + port + "/geoserver/rest/workspaces/" + workspaceName + "/datastores/"+datastore
-//                +"/"+"file.shp";
-//        File fileTemp = MyFileUtils.multipartToFile(file);
-//        HashMap<String, String> headerMap = new HashMap<>();
-//        headerMap.put("connection", "keep-alive");
-//        headerMap.put("Content-Type", "application/zip");//也可以通过file.getContentType来获取
-//        String responseContet = MyHttpUtils.PUTRawFile(url, "utf-8", headerMap, fileTemp, admin, password);
-//        return ResultUtil.success(responseContet);
-//    }
-//
-//    /*********geotiff*********************/
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    public HttpEntity setAuthHeader(){
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setBasicAuth(geoserverConfig.getUsername(), geoserverConfig.getPassword());
-//        return  new HttpEntity<>(null, headers);
-//    }
-//
-//
-//}
+package njnu.opengms.container.controller.geoserver;
+
+import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.ApiOperation;
+import njnu.opengms.container.bean.JsonResult;
+import njnu.opengms.container.component.GeoserverConfig;
+import njnu.opengms.container.enums.ResultEnum;
+import njnu.opengms.container.exception.MyException;
+import njnu.opengms.container.utils.ResultUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+
+import java.io.File;
+
+/**
+ * @ClassName CustomGeoserver
+ * @Description Geoserver本身支持的数据存储分为三种，分别是矢量数据源、栅格数据源以及其他的WMS数据源
+ * 代码对Geoserver提供的Rest风格接口，进行了自定义的封装
+ * 完成了典型矢量数据-Shapefile和典型的栅格数据-geotiff的服务上传、调用功能
+ * @Author sun_liber
+ * @Date 2019/2/21
+ * @Version 1.0.0
+ */
+@RestController
+@RequestMapping ("/custom_geoserver")
+public class CustomGeoserver {
+
+    @Autowired
+    GeoserverConfig geoserverConfig;
+
+    @Autowired
+    RestTemplate restTemplate;
+
+    @ApiOperation (value = "查看全部图层")
+    @RequestMapping (value = "/layers", method = RequestMethod.GET)
+    public JsonResult listLayers() throws Exception {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/layers.json";
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    public HttpEntity setAuthHeader() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(geoserverConfig.getUsername(), geoserverConfig.getPassword());
+        return new HttpEntity<>(null, headers);
+    }
+
+    @ApiOperation (value = "查看特定图层的详细信息", notes = "注意这里的layer要加前缀，及workspace:layer,默认workspace是datacontainer")
+    @RequestMapping (value = "/layers/{workspaceAndLayer}", method = RequestMethod.GET)
+    JsonResult listLayer(@PathVariable ("workspaceAndLauer") String workspaceAndLauer) {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/layers/" + workspaceAndLauer + ".json";
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    @ApiOperation (value = "列出工作区的所有数据存储，分为DataStores和CoverageStores", notes = "注意我们这里将工作区给定死了为datacontainer")
+    @RequestMapping (value = "/datacontainer", method = RequestMethod.GET)
+    JsonResult list() {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer.json";
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    @ApiOperation (value = "列出所有的数据存储，及datastores和coveragestores", notes = "注意我们这里将工作区给定死了为datacontainer,value为datastores时为矢量数据，coveragestores为栅格数据")
+    @RequestMapping (value = "/datacontainer/{value}", method = RequestMethod.GET)
+    JsonResult list(@PathVariable ("value") String value) {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/";
+        if ("datastores".equals(value)) {
+            url += "datastores.json";
+        } else if ("coveragestores".equals(value)) {
+            url += "coveragestores.json";
+        }
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    @ApiOperation (value = "获取datastores和coveragestores中的featuretypes和coverages", notes = "注意我们这里将工作区给定死了为datacontainer")
+    @RequestMapping (value = "/datacontainer/{value}/{storeName}", method = RequestMethod.GET)
+    JsonResult list(@PathVariable ("value") String value,
+                    @PathVariable ("storeName") String storeName) throws Exception {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/";
+        if ("datastores".equals(value)) {
+            url += "datastores/" + storeName + ".json";
+        } else if ("coveragestores".equals(value)) {
+            url += "coveragestores/" + storeName + ".json";
+        }
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    @ApiOperation (value = "获取featuretypes和coverages中的featuretype和coverage", notes = "注意我们这里将工作区给定死了为datacontainer,同时当value为datastores时，" +
+            "对应的storeName为特定的shapefileList")
+    @RequestMapping (value = "/datacontainer/{value}/{storeName}/{featureName}", method = RequestMethod.GET)
+    JsonResult list(@PathVariable ("value") String value,
+                    @PathVariable ("storeName") String storeName,
+                    @PathVariable ("layerName") String layerName) throws Exception {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/";
+        if ("datastores".equals(value)) {
+            url += "datastores/" + storeName + "/featuretypes/" + layerName + ".json";
+        } else if ("coveragestores".equals(value)) {
+            url += "coveragestores/" + storeName + "/coverages/" + layerName + ".json";
+        }
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.GET, setAuthHeader(), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    @ApiOperation (value = "Creates or modifies a single data store,如果不存在会默认创建，这里我们默认创建了名为shapefileList的datastore", notes = "Geoserver原生支持三种上传方式，分别是file、url和external，我们这里将" +
+            "使用external作为默认方式，因此我们创建一个dataStore的分别为两个步骤，第一步将文件复制到external路径之下" +
+            "第二步，调用该方法以实现更新" +
+            "同时我们这里采取了update=overwrite会对同名文件进行覆盖")
+    @RequestMapping (value = "/datacontainer/datastores/shapefileList", method = RequestMethod.GET)
+    JsonResult createDataStores(@RequestParam ("fileName") String fileName) throws Exception {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/datastores/shapefileList/external.shp?update=overwrite";
+        //注意这里是PUT请求
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getShapefileListPath() + File.separator
+                + fileName + ".shp"), String.class);
+        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
+            //注意这里geoserver返回的HttpStatus是201
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+    public HttpEntity setAuthHeaderAndTextData(String text) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth(geoserverConfig.getUsername(), geoserverConfig.getPassword());
+        headers.setContentType(MediaType.TEXT_PLAIN);
+        return new HttpEntity<>(text, headers);
+    }
+
+    @ApiOperation (value = "Creates or modifies a single coverage store", notes = "目前仅提供geotiff格式的栅格数据上传")
+    @RequestMapping (value = "/datacontainer/coverageStores/{storeName}", method = RequestMethod.GET)
+    JsonResult createCoverageStores(@RequestParam ("fileName") String fileName,
+                                    @PathVariable ("storeName") String storeName) {
+        String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/coveragestores/" + storeName + "/external.geotiff";
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getGeotiffFileListPath() + File.separator + fileName), JSONObject.class);
+        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
+            throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
+        }
+        return ResultUtils.success(responseEntity.getBody());
+    }
+
+
+}

@@ -1,9 +1,13 @@
 package njnu.opengms.container.controller;
 
+import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
+import njnu.opengms.container.component.GeoserverConfig;
 import njnu.opengms.container.dto.dataresource.AddDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.FindDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
+import njnu.opengms.container.enums.ResultEnum;
+import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
@@ -16,13 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -38,6 +42,9 @@ public class DataResourceController {
 
     @Autowired
     DataResourceService dataResourceService;
+
+    @Autowired
+    GeoserverConfig geoserverConfig;
 
     @Value ("${web.upload-path}")
     String staticPath;
@@ -123,10 +130,80 @@ public class DataResourceController {
     // Above code is for Application
 
     /*****/
+    @RequestMapping (value = "/listByMdlId/{mdlId}", method = RequestMethod.GET)
     JsonResult listByMdlId(@PathVariable ("mdlId") String mdlId) {
         return ResultUtils.success(dataResourceService.listByMdlId(mdlId));
     }
 
+
+    /*******/
+    //   Above code is for geoserver
+
+    /*******/
+    @RequestMapping (value = "/toGeoserver/{id}", method = RequestMethod.GET)
+    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "该资源的type必须为shapefile")
+    void toGeoserverDataStores(@PathVariable ("id") String id, HttpServletResponse response) throws IOException {
+        DataResource dataResource = dataResourceService.getById(id);
+        if ("shapefile".equals(dataResource.getType())) {
+            File file = new File(geoserverConfig.getShapefileListPath() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
+            if (!file.exists()) {
+                unZipFiles(new File(staticPath + File.separator + "store_dataResource_files" + File.separator + dataResource.getSourceStoreId()),
+                        geoserverConfig.getShapefileListPath(),
+                        id);
+                response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?fileName=" + id + "_" + dataResource.getFileName() + ".shp");
+            }
+            return;
+        } else if ("geotiff".equals(dataResource.getType())) {
+            File src = new File(staticPath + File.separator + "store_dataResource_files" + File.separator
+                    + dataResource.getSourceStoreId());
+            File des = new File(staticPath + File.separator + "geoserver_files" + File.separator
+                    + "geotiffes" + File.separator + id + "_" + dataResource.getFileName() + ".tif");
+            if (!des.exists()) {
+                FileUtils.copyFile(src, des);
+                response.sendRedirect("/custom_geoserver/datacontainer/coverageStores/" + id + "?fileName=" + id + "_" + dataResource.getFileName() + ".tif");
+            }
+            return;
+        } else {
+            throw new MyException(ResultEnum.UPLOAD_TYPE_ERROR);
+        }
+    }
+
+    public static void unZipFiles(File zipFile, String descDir, String fileHeader) throws IOException {
+        if (!descDir.endsWith("/")) {
+            descDir += "/";
+        }
+        File pathFile = new File(descDir);
+        if (!pathFile.exists()) {
+            pathFile.mkdirs();
+        }
+        ZipFile zip = new ZipFile(zipFile);
+
+        for (Enumeration entries = zip.entries(); entries.hasMoreElements(); ) {
+            ZipEntry entry = (ZipEntry) entries.nextElement();
+            String zipEntryName = entry.getName();
+            InputStream in = zip.getInputStream(entry);
+            String outPath = (descDir + fileHeader + "_" + zipEntryName).replaceAll("\\*", "/");
+            //判断路径是否存在,不存在则创建文件路径
+            File file = new File(outPath.substring(0, outPath.lastIndexOf('/')));
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            //判断文件全路径是否为文件夹,如果是上面已经上传,不需要解压
+            if (new File(outPath).isDirectory()) {
+                continue;
+            }
+
+            OutputStream out = new FileOutputStream(outPath);
+            byte[] buf1 = new byte[1024];
+            int len;
+            while ((len = in.read(buf1)) > 0) {
+                out.write(buf1, 0, len);
+            }
+            in.close();
+            out.close();
+        }
+        zip.close();
+    }
 
     public void zipFiles(File zip, List<File> srcFiles, List<String> renameList) throws IOException {
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip));
@@ -146,7 +223,5 @@ public class DataResourceController {
             e.printStackTrace();
         }
         out.close();
-        System.out.println("*****************压缩完毕*******************");
     }
-
 }

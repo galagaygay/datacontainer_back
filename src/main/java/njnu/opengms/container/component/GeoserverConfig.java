@@ -20,4 +20,6 @@ public class GeoserverConfig {
     private String basicURL;
     private String username;
     private String password;
+    private String shapefileListPath;
+    private String geotiffFileListPath;
 }
