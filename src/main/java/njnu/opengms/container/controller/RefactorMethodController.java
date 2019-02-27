@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.bean.ProcessResponse;
+import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.controller.common.BaseController;
 import njnu.opengms.container.dto.refactormethod.AddRefactorMethodDTO;
 import njnu.opengms.container.dto.refactormethod.FindRefactorMethodDTO;
@@ -18,7 +19,6 @@ import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.vo.RefactorMethodVO;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
@@ -40,8 +40,9 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
     @Autowired
     RefactorMethodServiceImp refactorMethodServiceImp;
 
-    @Value ("${web.upload-path}")
-    String upload;
+
+    @Autowired
+    PathConfig pathConfig;
 
     @Override
     public RefactorMethodServiceImp getService() {
@@ -63,17 +64,16 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
     ) throws IOException {
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
         String position = refactorMethod.getPosition();
-
-        String basePath = upload + File.separator + position;
+        String basePath = pathConfig.getBase() + File.separator + position;
         List<String> inputLocal = new ArrayList<>();
         for (String s : input) {
-            inputLocal.add(upload + File.separator + s);
+            inputLocal.add(pathConfig.getBase() + File.separator + s);
         }
         List<String> outputLocal = new ArrayList<>();
         List<String> out = new ArrayList<>();
         for (String s : output) {
             String uuid = UUID.randomUUID().toString();
-            outputLocal.add(upload + File.separator + "online_call_files" + File.separator + uuid + File.separator + s);
+            outputLocal.add(pathConfig.getOnlineCallFiles() + File.separator + uuid + File.separator + s);
             out.add("online_call_files" + File.separator + uuid + File.separator + s);
         }
         ProcessResponse processResponse = MethodInvokeUtils.computeRefactor(basePath, method, inputLocal, outputLocal);
@@ -98,6 +98,6 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
     public JsonResult invoke(@PathVariable ("id") String id) throws IOException {
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
         String position = refactorMethod.getPosition();
-        return ResultUtils.success(FileUtils.readFileToString(new File(upload + File.separator + position + File.separator + "methods.xml"), "utf-8"));
+        return ResultUtils.success(FileUtils.readFileToString(new File(pathConfig.getBase() + File.separator + position + File.separator + "methods.xml"), "utf-8"));
     }
 }

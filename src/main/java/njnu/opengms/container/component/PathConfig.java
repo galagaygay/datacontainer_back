@@ -6,20 +6,20 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 /**
- * @ClassName GeoserverConfig
+ * @ClassName PathConfig
  * @Description todo
  * @Author sun_liber
- * @Date 2019/2/21
+ * @Date 2019/2/27
  * @Version 1.0.0
  */
 @Component
 @PropertySource (value = "classpath:application.properties")
-@ConfigurationProperties (prefix = "geoserver")
+@ConfigurationProperties (prefix = "path")
 @Data
-public class GeoserverConfig {
-    private String basicURL;
-    private String username;
-    private String password;
-    private String shapefiles;
-    private String geotiffes;
+public class PathConfig {
+    private String base;
+    private String servicesMap;
+    private String servicesRefactor;
+    private String storeFiles;
+    private String onlineCallFiles;
 }

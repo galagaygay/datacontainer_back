@@ -3,6 +3,7 @@ package njnu.opengms.container.controller;
 import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.GeoserverConfig;
+import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.dto.dataresource.AddDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.FindDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
@@ -13,7 +14,6 @@ import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -46,8 +46,8 @@ public class DataResourceController {
     @Autowired
     GeoserverConfig geoserverConfig;
 
-    @Value ("${web.upload-path}")
-    String staticPath;
+    @Autowired
+    PathConfig pathConfig;
 
     @RequestMapping (value = "", method = RequestMethod.GET)
     JsonResult list(FindDataResourceDTO findDataResourceDTO) {
@@ -70,7 +70,14 @@ public class DataResourceController {
     }
 
     @RequestMapping (value = "/{id}", method = RequestMethod.DELETE)
-    JsonResult delete(@PathVariable ("id") String id) {
+    JsonResult delete(@PathVariable ("id") String id) throws IOException {
+        DataResource dataResource = dataResourceService.getById(id);
+        if (dataResource == null) {
+            return ResultUtils.success("删除成功");
+        }
+        //删除对应的数据实体
+        FileUtils.forceDelete(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()));
+        //TODO  之后应该完成对应的geoserver服务删除
         dataResourceService.delete(id);
         return ResultUtils.success("删除成功");
     }
@@ -107,7 +114,7 @@ public class DataResourceController {
         List<File> fileList = new ArrayList<>();
         List<String> renameList = new ArrayList<>();
         list.forEach(el -> {
-            fileList.add(new File(staticPath + File.separator + "store_dataResource_files" + File.separator + el.getSourceStoreId()));
+            fileList.add(new File(pathConfig.getStoreFiles() + File.separator + el.getSourceStoreId()));
             renameList.add(new String(el.getFileName() + "." + el.getSuffix()));
         });
         File temp = File.createTempFile("zipFiles", "zip");
@@ -145,19 +152,18 @@ public class DataResourceController {
     void toGeoserverDataStores(@PathVariable ("id") String id, HttpServletResponse response) throws IOException {
         DataResource dataResource = dataResourceService.getById(id);
         if ("shapefile".equals(dataResource.getType())) {
-            File file = new File(geoserverConfig.getShapefileListPath() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
+            File file = new File(geoserverConfig.getShapefiles() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
             if (!file.exists()) {
-                unZipFiles(new File(staticPath + File.separator + "store_dataResource_files" + File.separator + dataResource.getSourceStoreId()),
-                        geoserverConfig.getShapefileListPath(),
+                unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
+                        geoserverConfig.getShapefiles(),
                         id);
                 response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?fileName=" + id + "_" + dataResource.getFileName() + ".shp");
             }
             return;
         } else if ("geotiff".equals(dataResource.getType())) {
-            File src = new File(staticPath + File.separator + "store_dataResource_files" + File.separator
+            File src = new File(pathConfig.getStoreFiles() + File.separator
                     + dataResource.getSourceStoreId());
-            File des = new File(staticPath + File.separator + "geoserver_files" + File.separator
-                    + "geotiffes" + File.separator + id + "_" + dataResource.getFileName() + ".tif");
+            File des = new File(geoserverConfig.getGeotiffes() + File.separator + id + "_" + dataResource.getFileName() + ".tif");
             if (!des.exists()) {
                 FileUtils.copyFile(src, des);
                 response.sendRedirect("/custom_geoserver/datacontainer/coverageStores/" + id + "?fileName=" + id + "_" + dataResource.getFileName() + ".tif");

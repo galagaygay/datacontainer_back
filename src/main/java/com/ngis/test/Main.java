@@ -10,7 +10,5 @@ package com.ngis.test;
 
 public class Main {
     public static void main(String[] args) {
-        Ha ha = new Ha();
-        System.out.println(ha.getCount());
     }
 }

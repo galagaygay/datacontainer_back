@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.bean.ProcessResponse;
+import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.controller.common.BaseController;
 import njnu.opengms.container.dto.mappingmethod.AddMappingMethodDTO;
 import njnu.opengms.container.dto.mappingmethod.FindMappingMethodDTO;
@@ -15,7 +16,6 @@ import njnu.opengms.container.utils.MethodInvokeUtils;
 import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.vo.MappingMethodVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,8 +38,8 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
     @Autowired
     MappingMethodServiceImp mappingMethodServiceImp;
 
-    @Value ("${web.upload-path}")
-    String upload;
+    @Autowired
+    PathConfig pathConfig;
 
     @Override
     public MappingMethodServiceImp getService() {
@@ -63,9 +63,9 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
         String position = mappingMethod.getPosition();
         //调用方法
         String uid = UUID.randomUUID().toString();
-        String basePath = upload + File.separator + position;
-        String inputLocal = upload + File.separator + input;
-        String outputLocal = upload + File.separator + "online_call_files" + File.separator + uid + File.separator + output;
+        String basePath = pathConfig.getBase() + File.separator + position;
+        String inputLocal = pathConfig.getBase() + File.separator + input;
+        String outputLocal = pathConfig.getOnlineCallFiles() + File.separator + uid + File.separator + output;
         ProcessResponse processResponse = MethodInvokeUtils.computeMap(basePath, callType, inputLocal, outputLocal);
         //返回cmd命令执行情况，以及输出数据路径
         JSONObject jsonObject = new JSONObject();

@@ -19,6 +19,7 @@ import java.io.File;
  * @Description Geoserver本身支持的数据存储分为三种，分别是矢量数据源、栅格数据源以及其他的WMS数据源
  * 代码对Geoserver提供的Rest风格接口，进行了自定义的封装
  * 完成了典型矢量数据-Shapefile和典型的栅格数据-geotiff的服务上传、调用功能
+ * TODO 目前所有的业务逻辑代码是在Controller实现，可考虑生成静态工具类，以避免目前的HTTP重定向写法
  * @Author sun_liber
  * @Date 2019/2/21
  * @Version 1.0.0
@@ -132,7 +133,7 @@ public class CustomGeoserver {
     JsonResult createDataStores(@RequestParam ("fileName") String fileName) throws Exception {
         String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/datastores/shapefileList/external.shp?update=overwrite";
         //注意这里是PUT请求
-        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getShapefileListPath() + File.separator
+        ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getShapefiles() + File.separator
                 + fileName + ".shp"), String.class);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             //注意这里geoserver返回的HttpStatus是201
@@ -153,12 +154,10 @@ public class CustomGeoserver {
     JsonResult createCoverageStores(@RequestParam ("fileName") String fileName,
                                     @PathVariable ("storeName") String storeName) {
         String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/coveragestores/" + storeName + "/external.geotiff";
-        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getGeotiffFileListPath() + File.separator + fileName), JSONObject.class);
+        ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getGeotiffes() + File.separator + fileName), JSONObject.class);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
         }
         return ResultUtils.success(responseEntity.getBody());
     }
-
-
 }
