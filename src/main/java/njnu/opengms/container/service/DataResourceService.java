@@ -65,7 +65,7 @@ public class DataResourceService {
      * @return
      */
     public Page<DataResource> list(FindDataResourceDTO findDataResourceDTO) {
-        PageRequest pageRequest = PageRequest.of(findDataResourceDTO.getPage(), findDataResourceDTO.getPageSize());
+        PageRequest pageRequest = PageRequest.of(findDataResourceDTO.getPage() - 1, findDataResourceDTO.getPageSize());
         return dataResourceRepository.findAll(pageRequest);
     }
 
@@ -81,7 +81,7 @@ public class DataResourceService {
         return dataResourceRepository.findByDataItemId(dataItemId);
     }
 
-    public List<DataResource> listContainsDataItemFileName(String dataItemFileName) {
+    public List<DataResource> listByFileNameContains(String dataItemFileName) {
         return dataResourceRepository.findByFileNameContains(dataItemFileName);
     }
 

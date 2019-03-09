@@ -3,6 +3,7 @@ package njnu.opengms.container.pojo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import njnu.opengms.container.enums.DataResourceTypeEnum;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -28,11 +29,12 @@ public class DataResource {
     String id;
     String sourceStoreId;
     String author;
-    String type;
+    DataResourceTypeEnum type;
     String dataItemId;
     String mdlId;
     String fileName;
     String suffix;
     List<String> tags;
     Date createDate;
+    boolean toGeoserver;
 }

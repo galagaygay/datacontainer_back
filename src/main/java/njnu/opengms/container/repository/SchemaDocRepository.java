@@ -15,5 +15,5 @@ import java.util.List;
 public interface SchemaDocRepository extends MongoRepository<SchemaDoc, String> {
     SchemaDoc findByName(String name);
 
-    List<SchemaDoc> findByNameContains(String name);
+    List<SchemaDoc> findByNameContainsIgnoreCase(String name);
 }

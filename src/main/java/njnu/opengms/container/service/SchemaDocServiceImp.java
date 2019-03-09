@@ -129,7 +129,7 @@ public class SchemaDocServiceImp implements BaseService<SchemaDoc, AddSchemaDocD
         return mongoTemplate.find(query, SchemaDoc.class);
     }
 
-    public List<SchemaDoc> findByNameContains(String name) {
-        return schemaDocRepository.findByNameContains(name);
+    public List<SchemaDoc> findByNameContainsIgnoreCase(String name) {
+        return schemaDocRepository.findByNameContainsIgnoreCase(name);
     }
 }

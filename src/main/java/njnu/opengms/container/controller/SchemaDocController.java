@@ -85,9 +85,9 @@ public class SchemaDocController implements BaseController<SchemaDoc, AddSchemaD
     }
 
     @ApiOperation (value = "根据name查询，获取SchemaDoc列表")
-    @RequestMapping (value = "/findByNameContains", method = RequestMethod.GET)
-    public JsonResult getSchemaDocByName(@RequestParam ("name") String name) {
-        return ResultUtils.success(schemaDocServiceImp.findByNameContains(name));
+    @RequestMapping (value = "/findByNameContainsIgnoreCase", method = RequestMethod.GET)
+    public JsonResult findByNameContainsIgnoreCase(@RequestParam ("name") String name) {
+        return ResultUtils.success(schemaDocServiceImp.findByNameContainsIgnoreCase(name));
     }
 
     @ApiOperation (value = "由UdxSchema生成对应的同构UdxData")

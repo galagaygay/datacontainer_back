@@ -3,6 +3,7 @@ package njnu.opengms.container.dto.dataresource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import njnu.opengms.container.enums.DataResourceTypeEnum;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ import java.util.List;
 public class AddDataResourceDTO {
     String sourceStoreId;
     String author;
-    String type;
+    DataResourceTypeEnum type;
     String dataItemId;
     String mdlId;
     String fileName;

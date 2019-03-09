@@ -7,7 +7,7 @@ import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.dto.dataresource.AddDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.FindDataResourceDTO;
 import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
-import njnu.opengms.container.enums.ResultEnum;
+import njnu.opengms.container.enums.DataResourceTypeEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.service.DataResourceService;
@@ -103,9 +103,9 @@ public class DataResourceController {
         return ResultUtils.success(dataResourceService.listByDataItemId(dataItemId));
     }
 
-    @RequestMapping (value = "/listContainsDataItemFileName/{dataItemFileName}", method = RequestMethod.GET)
-    JsonResult listByDataItemName(@PathVariable ("dataItemFileName") String dataItemFileName) {
-        return ResultUtils.success(dataResourceService.listContainsDataItemFileName(dataItemFileName));
+    @RequestMapping (value = "/listByFileNameContains/{dataItemFileName}", method = RequestMethod.GET)
+    JsonResult listByFileNameContains(@PathVariable ("dataItemFileName") String dataItemFileName) {
+        return ResultUtils.success(dataResourceService.listByFileNameContains(dataItemFileName));
     }
 
     @RequestMapping (value = "/downloadAll/{dataItemId}", method = RequestMethod.GET)
@@ -148,10 +148,10 @@ public class DataResourceController {
 
     /*******/
     @RequestMapping (value = "/toGeoserver/{id}", method = RequestMethod.GET)
-    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "该资源的type必须为shapefile")
+    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "")
     void toGeoserverDataStores(@PathVariable ("id") String id, HttpServletResponse response) throws IOException {
         DataResource dataResource = dataResourceService.getById(id);
-        if ("shapefile".equals(dataResource.getType())) {
+        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE) {
             File file = new File(geoserverConfig.getShapefiles() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
             if (!file.exists()) {
                 unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
@@ -160,7 +160,7 @@ public class DataResourceController {
                 response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?fileName=" + id + "_" + dataResource.getFileName() + ".shp");
             }
             return;
-        } else if ("geotiff".equals(dataResource.getType())) {
+        } else if (dataResource.getType() == DataResourceTypeEnum.GEOTIFF) {
             File src = new File(pathConfig.getStoreFiles() + File.separator
                     + dataResource.getSourceStoreId());
             File des = new File(geoserverConfig.getGeotiffes() + File.separator + id + "_" + dataResource.getFileName() + ".tif");
@@ -170,7 +170,7 @@ public class DataResourceController {
             }
             return;
         } else {
-            throw new MyException(ResultEnum.UPLOAD_TYPE_ERROR);
+            throw new MyException("Geoserver 目前仅支持shapefile与geotiff数据");
         }
     }
 
