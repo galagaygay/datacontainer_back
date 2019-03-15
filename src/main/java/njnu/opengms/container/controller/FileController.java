@@ -68,7 +68,7 @@ public class FileController {
     }
 
 
-    @ApiOperation (value = "下载文件", notes = "根据文件的路径下载文件,这里用post方法是因为数据库存储的路径是\\,get请求拼接字符串需要对\\进行编码")
+    @ApiOperation (value = "根据存储在后台的路径，下载对应文件", notes = "根据文件的路径下载文件,这里用post方法是因为数据库存储的路径是\\,get请求拼接字符串需要对\\进行编码，所以使用post方法")
     @RequestMapping (value = "/download", method = RequestMethod.POST)
     ResponseEntity<InputStreamResource> download(@RequestParam ("path") String path) throws IOException {
         File file = new File(pathConfig.getBase() + File.separator + path);

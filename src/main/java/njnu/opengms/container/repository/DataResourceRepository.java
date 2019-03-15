@@ -1,6 +1,8 @@
 package njnu.opengms.container.repository;
 
 import njnu.opengms.container.pojo.DataResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.List;
  * @Version 1.0.0
  */
 public interface DataResourceRepository extends MongoRepository<DataResource, String> {
+    Page<DataResource> findByAuthor(String author, Pageable pageable);
+
     List<DataResource> findByAuthor(String author);
 
     List<DataResource> findByDataItemId(String dataItemId);

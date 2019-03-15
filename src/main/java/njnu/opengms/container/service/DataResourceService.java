@@ -11,6 +11,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -40,6 +41,9 @@ public class DataResourceService {
     }
 
     public DataResource add(AddDataResourceDTO addDataResourceDTO) {
+        if (addDataResourceDTO.getFileName().contains(".")) {
+            throw new MyException("fileName 请不要带后缀");
+        }
         DataResource dataResource = new DataResource();
         BeanUtils.copyProperties(addDataResourceDTO, dataResource);
         dataResource.setCreateDate(new Date());
@@ -71,6 +75,11 @@ public class DataResourceService {
 
     public long count() {
         return dataResourceRepository.count();
+    }
+
+    public Page<DataResource> listByAuthor(String author, Integer page, Integer pageSize) {
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return dataResourceRepository.findByAuthor(author, pageable);
     }
 
     public List<DataResource> listByAuthor(String author) {
