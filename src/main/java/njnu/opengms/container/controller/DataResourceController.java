@@ -54,6 +54,7 @@ public class DataResourceController {
         return ResultUtils.success(dataResourceService.list(findDataResourceDTO));
     }
 
+    @ApiOperation (value = "上传DataReource", notes = "注意fileName请不要添加后缀")
     @RequestMapping (value = "", method = RequestMethod.POST)
     JsonResult add(@RequestBody AddDataResourceDTO addDataResourceDTO) {
         return ResultUtils.success(dataResourceService.add(addDataResourceDTO));
