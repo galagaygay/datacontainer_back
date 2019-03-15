@@ -94,8 +94,13 @@ public class DataResourceController {
 
     /*******/
     @RequestMapping (value = "/listByAuthor/{author}", method = RequestMethod.GET)
-    JsonResult listByAuthor(@PathVariable ("author") String author) {
-        return ResultUtils.success(dataResourceService.listByAuthor(author));
+    JsonResult listByAuthor(@PathVariable ("author") String author,
+                            @RequestParam (value = "page", required = false) Integer page,
+                            @RequestParam (value = "pageSize", required = false) Integer pageSize) {
+        if (page == null || pageSize == null) {
+            return ResultUtils.success(dataResourceService.listByAuthor(author));
+        }
+        return ResultUtils.success(dataResourceService.listByAuthor(author, page, pageSize));
     }
 
     @RequestMapping (value = "/listByDataItemId/{dataItemId}", method = RequestMethod.GET)
