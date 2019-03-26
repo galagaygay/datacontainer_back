@@ -4,8 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.GeoserverConfig;
+import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
+import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -30,6 +32,9 @@ public class CustomGeoserver {
 
     @Autowired
     GeoserverConfig geoserverConfig;
+
+    @Autowired
+    DataResourceService dataResourceService;
 
     @Autowired
     RestTemplate restTemplate;
@@ -130,16 +135,20 @@ public class CustomGeoserver {
             "第二步，调用该方法以实现更新" +
             "同时我们这里采取了update=overwrite会对同名文件进行覆盖")
     @RequestMapping (value = "/datacontainer/datastores/shapefileList", method = RequestMethod.GET)
-    JsonResult createDataStores(@RequestParam ("fileName") String fileName) throws Exception {
+    JsonResult createDataStores(@RequestParam ("fileName") String fileName,
+                                @RequestParam ("id") String id) throws Exception {
         String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/datastores/shapefileList/external.shp?update=overwrite";
         //注意这里是PUT请求
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getShapefiles() + File.separator
-                + fileName + ".shp"), String.class);
+                + fileName), String.class);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             //注意这里geoserver返回的HttpStatus是201
             throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
         }
-        return ResultUtils.success(responseEntity.getBody());
+        UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
+        updateDataResourceDTO.setToGeoserver(true);
+        dataResourceService.save(id, updateDataResourceDTO);
+        return ResultUtils.success("id:" + id + "发布成功");
     }
 
     public HttpEntity setAuthHeaderAndTextData(String text) {
@@ -152,12 +161,17 @@ public class CustomGeoserver {
     @ApiOperation (value = "Creates or modifies a single coverage store", notes = "目前仅提供geotiff格式的栅格数据上传")
     @RequestMapping (value = "/datacontainer/coverageStores/{storeName}", method = RequestMethod.GET)
     JsonResult createCoverageStores(@RequestParam ("fileName") String fileName,
-                                    @PathVariable ("storeName") String storeName) {
+                                    @RequestParam ("id") String id,
+                                    @PathVariable ("storeName") String storeName
+    ) {
         String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/coveragestores/" + storeName + "/external.geotiff";
         ResponseEntity<JSONObject> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getGeotiffes() + File.separator + fileName), JSONObject.class);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
         }
-        return ResultUtils.success(responseEntity.getBody());
+        UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
+        updateDataResourceDTO.setToGeoserver(true);
+        dataResourceService.save(id, updateDataResourceDTO);
+        return ResultUtils.success("id:" + id + "发布成功");
     }
 }

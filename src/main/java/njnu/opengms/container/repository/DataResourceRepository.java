@@ -15,6 +15,7 @@ import java.util.List;
  * @Version 1.0.0
  */
 public interface DataResourceRepository extends MongoRepository<DataResource, String> {
+
     Page<DataResource> findByAuthor(String author, Pageable pageable);
 
     List<DataResource> findByAuthor(String author);

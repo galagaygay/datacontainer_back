@@ -1,5 +1,7 @@
 package com.ngis.test;
 
+import java.io.IOException;
+
 /**
  * @ClassName Main
  * @Description todo
@@ -9,6 +11,7 @@ package com.ngis.test;
  */
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
     }
 }

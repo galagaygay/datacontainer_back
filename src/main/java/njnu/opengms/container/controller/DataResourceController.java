@@ -12,6 +12,7 @@ import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
+import njnu.opengms.container.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -25,6 +26,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -138,6 +140,56 @@ public class DataResourceController {
                 .body(new InputStreamResource(FileUtils.openInputStream(temp)));
     }
 
+    @RequestMapping (value = "/zipDataStoreList", method = RequestMethod.GET)
+    ResponseEntity<InputStreamResource> zipDataStoreList(@RequestParam ("sourceStoreId") List<String> sourceStoreIdList,
+                                                         @RequestParam ("fileName") List<String> fileNameList,
+                                                         @RequestParam ("suffix") List<String> suffixList
+    ) throws IOException {
+        List<File> fileList = new ArrayList<>();
+        List<String> renameList = new ArrayList<>();
+        for (int i = 0; i < sourceStoreIdList.size(); i++) {
+            fileList.add(new File(pathConfig.getStoreFiles() + File.separator + sourceStoreIdList.get(i)));
+            renameList.add(fileNameList.get(i) + "." + suffixList.get(i));
+        }
+        File temp = File.createTempFile("zipFiles", "zip");
+        zipFiles(temp, fileList, renameList);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Content-Disposition", "attachment;filename=zipFiles.zip");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentLength(temp.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(FileUtils.openInputStream(temp)));
+    }
+
+
+    @RequestMapping (value = "/zipDataStoreList/songjie", method = RequestMethod.GET)
+    ResponseEntity<InputStreamResource> zipDataStoreList(@RequestParam ("sourceStoreId") List<String> sourceStoreIdList
+    ) throws IOException {
+        List<File> fileList = new ArrayList<>();
+        for (int i = 0; i < sourceStoreIdList.size(); i++) {
+            fileList.add(new File(pathConfig.getStoreFiles() + File.separator + sourceStoreIdList.get(i)));
+        }
+        File temp = File.createTempFile("zipFiles", "zip");
+        zipFiles(temp, fileList);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Content-Disposition", "attachment;filename=zipFiles.zip");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentLength(temp.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(FileUtils.openInputStream(temp)));
+    }
+
+
 
     /******/
     // Above code is for Application
@@ -152,32 +204,20 @@ public class DataResourceController {
     /*******/
     //   Above code is for geoserver
 
-    /*******/
-    @RequestMapping (value = "/toGeoserver/{id}", method = RequestMethod.GET)
-    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "")
-    void toGeoserverDataStores(@PathVariable ("id") String id, HttpServletResponse response) throws IOException {
-        DataResource dataResource = dataResourceService.getById(id);
-        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE) {
-            File file = new File(geoserverConfig.getShapefiles() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
-            if (!file.exists()) {
-                unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
-                        geoserverConfig.getShapefiles(),
-                        id);
-                response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?fileName=" + id + "_" + dataResource.getFileName() + ".shp");
-            }
-            return;
-        } else if (dataResource.getType() == DataResourceTypeEnum.GEOTIFF) {
-            File src = new File(pathConfig.getStoreFiles() + File.separator
-                    + dataResource.getSourceStoreId());
-            File des = new File(geoserverConfig.getGeotiffes() + File.separator + id + "_" + dataResource.getFileName() + ".tif");
-            if (!des.exists()) {
-                FileUtils.copyFile(src, des);
-                response.sendRedirect("/custom_geoserver/datacontainer/coverageStores/" + id + "?fileName=" + id + "_" + dataResource.getFileName() + ".tif");
-            }
-            return;
-        } else {
-            throw new MyException("Geoserver 目前仅支持shapefile与geotiff数据");
+    /**
+     * @param zip
+     * @param srcFiles 首先将其全部解压，然后全部压缩
+     *
+     * @throws IOException
+     */
+    private void zipFiles(File zip, List<File> srcFiles) throws IOException {
+        String uid = UUID.randomUUID().toString();
+        for (File srcFile : srcFiles) {
+            unZipFiles(srcFile, pathConfig.getDataProcess() + File.separator + uid, uid);
         }
+        File dir = new File(pathConfig.getDataProcess() + File.separator + uid);
+        File[] fileArray = dir.listFiles();
+        ZipUtils.zipFiles(zip, "", fileArray);
     }
 
     public static void unZipFiles(File zipFile, String descDir, String fileHeader) throws IOException {
@@ -216,6 +256,39 @@ public class DataResourceController {
         }
         zip.close();
     }
+
+    /*******/
+    @RequestMapping (value = "/toGeoserver/{id}", method = RequestMethod.GET)
+    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "")
+    void toGeoserverDataStores(@PathVariable ("id") String id, HttpServletResponse response) throws IOException {
+        DataResource dataResource = dataResourceService.getById(id);
+        if (dataResource.isToGeoserver()) {
+            //已发布服务
+            return;
+        }
+        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE) {
+            File file = new File(pathConfig.getShapefiles() + File.separator + id + "_" + dataResource.getFileName() + ".shp");
+            if (!file.exists()) {
+                unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
+                        pathConfig.getShapefiles(),
+                        id);
+                response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?id=" + id + "&fileName=" + id + "_" + dataResource.getFileName() + ".shp");
+            }
+            response.sendRedirect("/custom_geoserver/datacontainer/datastores/shapefileList?id=" + id + "&fileName=" + id + "_" + dataResource.getFileName() + ".shp");
+        } else if (dataResource.getType() == DataResourceTypeEnum.GEOTIFF) {
+            File src = new File(pathConfig.getStoreFiles() + File.separator
+                    + dataResource.getSourceStoreId());
+            File des = new File(pathConfig.getGeotiffes() + File.separator + id + "_" + dataResource.getFileName() + ".tif");
+            if (!des.exists()) {
+                FileUtils.copyFile(src, des);
+                response.sendRedirect("/custom_geoserver/datacontainer/coverageStores/" + id + "?id=" + id + "&fileName=" + id + "_" + dataResource.getFileName() + ".tif");
+            }
+            response.sendRedirect("/custom_geoserver/datacontainer/coverageStores/" + id + "?id=" + id + "&fileName=" + id + "_" + dataResource.getFileName() + ".tif");
+        } else {
+            throw new MyException("Geoserver 目前仅支持shapefile与geotiff数据");
+        }
+    }
+
 
     public void zipFiles(File zip, List<File> srcFiles, List<String> renameList) throws IOException {
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip));
