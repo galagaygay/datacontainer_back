@@ -60,18 +60,18 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
     ) throws IOException {
         //根据映射方法ID查找映射方法存储的路径
         MappingMethod mappingMethod = mappingMethodServiceImp.get(id);
-        String position = mappingMethod.getPosition();
+        String invokePosition = mappingMethod.getInvokePosition();
         //调用方法
         String uid = UUID.randomUUID().toString();
-        String basePath = pathConfig.getBase() + File.separator + position;
+        String basePath = pathConfig.getBase() + File.separator + invokePosition;
         String inputLocal = pathConfig.getBase() + File.separator + input;
-        String outputLocal = pathConfig.getOnlineCallFiles() + File.separator + uid + File.separator + output;
+        String outputLocal = pathConfig.getDataProcess() + File.separator + uid + File.separator + output;
         ProcessResponse processResponse = MethodInvokeUtils.computeMap(basePath, callType, inputLocal, outputLocal);
         //返回cmd命令执行情况，以及输出数据路径
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("processResponse", processResponse);
         if (processResponse.getFlag()) {
-            jsonObject.put("output", "online_call_files" + File.separator + uid + File.separator + output);
+            jsonObject.put("output", "data_process" + File.separator + uid + File.separator + output);
         } else {
             jsonObject.put("output", null);
         }

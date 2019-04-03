@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -69,7 +70,8 @@ public class DataResourceService {
      * @return
      */
     public Page<DataResource> list(FindDataResourceDTO findDataResourceDTO) {
-        PageRequest pageRequest = PageRequest.of(findDataResourceDTO.getPage() - 1, findDataResourceDTO.getPageSize());
+        Sort sort = new Sort(findDataResourceDTO.getAsc() ? Sort.Direction.ASC : Sort.Direction.DESC, findDataResourceDTO.getProperties());
+        PageRequest pageRequest = PageRequest.of(findDataResourceDTO.getPage() - 1, findDataResourceDTO.getPageSize(), sort);
         return dataResourceRepository.findAll(pageRequest);
     }
 

@@ -31,7 +31,12 @@ public class RefactorMethod {
     List<String> supportedUdxSchemas;
     String storePath;
 
-    public String getPosition() {
+    /**
+     * 获取重构服务的真正调用文件夹
+     *
+     * @return
+     */
+    public String getInvokePosition() {
         return storePath.substring(0, storePath.lastIndexOf("\\")) + File.separator + "invoke";
     }
 }

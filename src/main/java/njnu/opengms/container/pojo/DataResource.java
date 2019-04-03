@@ -36,5 +36,9 @@ public class DataResource {
     String suffix;
     List<String> tags;
     Date createDate;
+
     boolean toGeoserver;
+    String layerName;
+
+    String meta;
 }

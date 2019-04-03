@@ -17,8 +17,9 @@ public enum ResultEnum {
 
     UPLOAD_TYPE_ERROR(-8, "上传Type存在问题"),
     TRANSFER_UDX_ERROR(-9, "UDX转换时，支持的文件类型仅仅有json与xml"),
-
-    REMOTE_SERVICE_ERROR(-10, "远程服务调用出错");
+    NOTSUPPORT_GEOSERVER_ERROR(-10, "Geoserver服务发布不支持当前类型"),
+    NOTSUPPORT_GETMETA_ERROR(-11, "获取meta不支持当前类型"),
+    REMOTE_SERVICE_ERROR(-12, "远程服务调用出错");
 
     private Integer code;
 

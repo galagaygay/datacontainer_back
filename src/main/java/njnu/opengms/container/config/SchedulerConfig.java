@@ -1,10 +1,12 @@
 package njnu.opengms.container.config;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -25,6 +27,6 @@ public class SchedulerConfig {
     @Scheduled (cron = "0 0 3 * * ?")
     public void Schedule() throws IOException {
         System.out.println("凌晨三点对你思念是一天又一天");
-//        FileUtils.cleanDirectory(new File(upload + File.separator + "online_call_files"));
+        FileUtils.cleanDirectory(new File(upload + File.separator + "data_process"));
     }
 }

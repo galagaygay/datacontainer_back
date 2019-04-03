@@ -30,7 +30,12 @@ public class MappingMethod {
     String supportedUdxSchema;
     String storePath;
 
-    public String getPosition() {
+    /**
+     * 获取映射服务的真正调用文件夹
+     *
+     * @return
+     */
+    public String getInvokePosition() {
         return storePath.substring(0, storePath.lastIndexOf("\\")) + File.separator + "invoke";
     }
 }

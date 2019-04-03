@@ -37,7 +37,7 @@ public class FileController {
     PathConfig pathConfig;
 
     @ApiOperation (value = "上传文件", notes = "上传映射、重构服务实体、在线调用的输入文件、数据资源")
-    @ApiImplicitParam (name = "type", value = "上传实体的类型,可以为map、refactor、online_call_files、store_dataResource_files", dataType = "string", paramType = "path", required = true)
+    @ApiImplicitParam (name = "type", value = "上传实体的类型,可以为map、refactor、data_process、store_dataResource_files", dataType = "string", paramType = "path", required = true)
     @RequestMapping (value = "/upload/{type}", method = RequestMethod.POST)
     JsonResult upload(@RequestParam ("file") MultipartFile file,
                       @PathVariable ("type") String type) throws IOException {
@@ -46,9 +46,10 @@ public class FileController {
             path = pathConfig.getServicesMap();
         } else if (("refactor").equals(type)) {
             path = pathConfig.getServicesRefactor();
-        } else if ("online_call_files".equals(type)) {
-            path = pathConfig.getOnlineCallFiles();
+        } else if ("data_process".equals(type)) {
+            path = pathConfig.getDataProcess();
         } else if ("store_dataResource_files".equals(type)) {
+            //不用UUID做文件夹嵌套的
             path = pathConfig.getStoreFiles();
             String uuid = UUID.randomUUID().toString();
             FileUtils.copyInputStreamToFile(file.getInputStream(), new File(path + File.separator + uuid));
@@ -68,7 +69,7 @@ public class FileController {
     }
 
 
-    @ApiOperation (value = "根据存储在后台的路径，下载对应文件", notes = "根据文件的路径下载文件,这里用post方法是因为数据库存储的路径是\\,get请求拼接字符串需要对\\进行编码，所以使用post方法")
+    @ApiOperation (value = "根据映射和重构服务存储在后台的storePath路径，下载对应服务压缩包", notes = "根据文件的路径下载文件,这里用post方法是因为数据库存储的路径是\\,get请求拼接字符串需要对\\进行编码，所以使用post方法")
     @RequestMapping (value = "/download", method = RequestMethod.POST)
     ResponseEntity<InputStreamResource> download(@RequestParam ("path") String path) throws IOException {
         File file = new File(pathConfig.getBase() + File.separator + path);

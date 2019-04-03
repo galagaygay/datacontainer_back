@@ -4,17 +4,23 @@ import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.GeoserverConfig;
+import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.dto.dataresource.UpdateDataResourceDTO;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.service.DataResourceService;
 import njnu.opengms.container.utils.ResultUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.PrefixFileFilter;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
  * @ClassName CustomGeoserver
@@ -32,6 +38,9 @@ public class CustomGeoserver {
 
     @Autowired
     GeoserverConfig geoserverConfig;
+
+    @Autowired
+    PathConfig pathConfig;
 
     @Autowired
     DataResourceService dataResourceService;
@@ -135,20 +144,25 @@ public class CustomGeoserver {
             "第二步，调用该方法以实现更新" +
             "同时我们这里采取了update=overwrite会对同名文件进行覆盖")
     @RequestMapping (value = "/datacontainer/datastores/shapefileList", method = RequestMethod.GET)
-    JsonResult createDataStores(@RequestParam ("fileName") String fileName,
-                                @RequestParam ("id") String id) throws Exception {
+    JsonResult createDataStores(@RequestParam ("id") String id) throws Exception {
         String url = geoserverConfig.getBasicURL() + "/geoserver/rest/workspaces/datacontainer/datastores/shapefileList/external.shp?update=overwrite";
+        //根据id 前缀找到 指定的shp文件
+        File dir = new File(pathConfig.getShapefiles());
+        Collection<File> fileCollection = FileUtils.listFiles(dir, FileFilterUtils.and(new SuffixFileFilter(".shp"), new PrefixFileFilter(id)), null);
+        File real_file = fileCollection.iterator().next();
+
         //注意这里是PUT请求
         ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, setAuthHeaderAndTextData(geoserverConfig.getShapefiles() + File.separator
-                + fileName), String.class);
+                + real_file.getName()), String.class);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             //注意这里geoserver返回的HttpStatus是201
             throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
         }
         UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
         updateDataResourceDTO.setToGeoserver(true);
+        updateDataResourceDTO.setLayerName(real_file.getName());
         dataResourceService.save(id, updateDataResourceDTO);
-        return ResultUtils.success("id:" + id + "发布成功");
+        return ResultUtils.success("fileName:" + real_file.getName() + "发布成功");
     }
 
     public HttpEntity setAuthHeaderAndTextData(String text) {
@@ -171,7 +185,8 @@ public class CustomGeoserver {
         }
         UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
         updateDataResourceDTO.setToGeoserver(true);
+        updateDataResourceDTO.setLayerName(fileName);
         dataResourceService.save(id, updateDataResourceDTO);
-        return ResultUtils.success("id:" + id + "发布成功");
+        return ResultUtils.success("fileName:" + fileName + "发布成功");
     }
 }

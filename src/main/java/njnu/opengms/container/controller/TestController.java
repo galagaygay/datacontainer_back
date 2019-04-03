@@ -1,5 +1,6 @@
 package njnu.opengms.container.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.ngis.udx.Transfer;
 import com.ngis.udx.data.UdxData;
@@ -10,6 +11,8 @@ import com.ngis.udx.data.structure.Vector3d;
 import com.ngis.udx.schema.UdxSchema;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.AsyncTaskComponent;
+import njnu.opengms.container.getmeta.DataStoreMetaGet;
+import njnu.opengms.container.getmeta.impl.ShapefileMeta;
 import njnu.opengms.container.pojo.SchemaDoc;
 import njnu.opengms.container.repository.SchemaDocRepository;
 import njnu.opengms.container.service.MappingMethodServiceImp;
@@ -142,12 +145,19 @@ public class TestController {
         pcData.getNodeByName("电话").setUdxKernel(tel.getUdxKernel());
 
         UdxData p = new UdxData();
-
-
         BeanUtils.copyProperties(connectionData, p);
 
         return ResultUtils.success(pcData);
     }
+
+
+    @RequestMapping (value = "/test9", method = RequestMethod.GET)
+    public JsonResult test9() throws IOException, DocumentException {
+        DataStoreMetaGet metaGet = new ShapefileMeta();
+        JSONObject jsonObject = metaGet.getMeta(new File("F:/sunlingzhi/datacontainer_store/geoserver_files/shapefiles/24a6b80a-e15b-49f2-bebc-d03e427a5051_QXJM.shp"));
+        return ResultUtils.success(jsonObject);
+    }
+
 
 
 }

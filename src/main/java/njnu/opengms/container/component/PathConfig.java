@@ -21,8 +21,8 @@ public class PathConfig {
     private String servicesMap;
     private String servicesRefactor;
     private String storeFiles;
-    private String onlineCallFiles;
     private String dataProcess;
     private String shapefiles;
     private String geotiffes;
+    private String getMeta;
 }

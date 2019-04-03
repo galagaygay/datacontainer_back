@@ -17,159 +17,63 @@
 
 ![相关流程](https://raw.githubusercontent.com/sunlingzhiliber/imgstore/master/W9IGGB3HXEQRKJSIUR%5DK%7ELG.png)
 
-## 3.模块划分
+## 3.存储解释
 
-### Schema仓库
+通过`web.upload-path`将存储路径和相关代码隔离开来，其中涉及的到文件夹包括
 
-针对结构化表达数据模型，进行资源库的建立。
+### geoserver_files
 
-### 数据映射
-
-完成原始数据和UDXData之间的转换。
-
-### 数据重构
-
-完成UDXData之间的相互转化。
-
-### 数据可视化
-
-以结构化表达数据模型为基础，构建可视化服务。
-
-### 数据服务
-
-数据生成：以结构化表达数据模型为基础，通过UI界面构建UDXData。
-数据发布：将构建好的结构化数据表达模型(UDXData)发布为服务。
-数据抽取：以发布的数据服务为基础，从中抽取用户感兴趣的信息。
-
-## 4.使用说明
-
-[API文档参考](http://localhost:8080/swagger-ui.html)
-
-### Schema仓库
-
-#### 创建
-
-```java
-public class AddSchemaDocDTO {
-    String name;
-    String detailMarkDown;
-    String description;
-    UdxSchema udxSchema;
-}
-```
-我们在创建SchemaDoc的时候，需要注意UdxSchema字段，
-该字段目前的获取方式是根据Rest请求`/schemaDoc/getSchemaFromFile`,加载JSON文件或者XML文件来生成的。
-
-#### 详情
-
-```java
-public class SchemaDoc {
-    @Id
-    String id;
-    String name;
-    String description;
-    String detailMarkDown;
-    @JsonFormat (pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    Date createDate;
-    UdxSchema udxSchema;
-}
-```
-针对于SchemaDoc,我们在页面中应该可以对其所有字段均可进行查看。
-同时可以经由SchemaDoc跳转到相关的映射方法，重构方法。
-`/schemaDoc/related?id=schemaDocId`
-
-
-### 数据映射
-
-#### 创建
-
-```java
-public class AddMappingMethodDTO {
-    String name;
-    String description;
-    String detailMarkdown;
-    String supportedUdxSchema;
-    String storePath;
-}
-```
-
-我们在创建map的时候，需要注意`supportedUdxSchema`字段和`storePath`字段。
-
-1. 数据映射实体都会绑定一个supportedUdxSchema，因此在增加数据映射实体时，需要首先创建一个Schema实体（或者选择一个已有的Schema实体）。
-2. 每个数据映射实体还有绑定一个Zip包，因此需要首先上传Zip包，得到上传路径，然后再创建实体
-`/file/upload/map` 上传Zip文件
-
-
-#### 详情
-
-```java
-public class MappingMethod {
-    @Id
-    String id;
-    String name;
-    String description;
-    String detailMarkDown;
-    Date createDate;
-    String supportedUdxSchema;
-    String storePath;
-}
+用于geoserver使用，发布矢量和栅格服务
 
 ```
-针对于MappingMethod,我们在页面中应该可以对其所有字段均可进行查看。
-并且对于`storePath`可以提供下载到本地的使用。`/file/download?path=storePath`
-同时可以经由MappingMethod跳转到相关的SchemaDoc页面
-Attention：数据映射实体目前只是简单上传，后期需要提供在线调用的接口。
-
-### 数据重构
-
-#### 创建
-
-```java
-public class AddRefactorMethodDTO {
-    String name;
-    String description;
-    String detailMarkdown;
-    List<String> supportedUdxSchemas;
-    String storePath;
-}
+- geotiffes
+  - XXXX.tif
+  - XXXX.tif
+- shapefiles
+  - XXX.shp
+  - XXX.shp
+  - XXX.shp
 ```
 
-我们在创建refactor的时候，需要注意`supportedUdxSchema`字段和`storePath`字段。
+### data_process
 
-1. 数据重构实体都会绑定多个UdxSchema，因此在增加数据重构实体时，需要首先创建Schema实体（或者选择已有的Schema实体）。同时我们这里并没有限定输入和输出以及是否对应，只是简单的将其全部合为了一个List。
-2. 数据重构实体绑定一个Zip包，因此需要首先上传Zip包，得到上传路径，然后再创建实体
-`/file/upload/refactor` 上传Zip文件
+文件夹为处理数据所用，以UUID建立一个文件夹，在文件夹中进行一些处理,目前设计到的处理包括
 
-#### 详情
-
-```java
-public class RefactorMethod {
-    @Id
-    String id;
-    String name;
-    String description;
-    String detailMarkDown;
-    Date createDate;
-    List<String> supportedUdxSchemas;
-    String storePath;
-}
+1.解压缩和压缩文件
+2.在线调用service
 
 ```
-针对于RefactorMethod,我们在页面中应该可以对其所有字段均可进行查看。
-并且对于`storePath`可以提供下载到本地的使用。`/file/download?path=storePath`
-同时可以经由RefactorMethod跳转到相关的SchemaDoc
-Attention：数据重构实体目前只是简单上传，后期需要提供在线调用的接口。
+- UUID1
+- UUID2
+- UUID3
+...
+```
 
-### 数据可视化
+### services
 
-TODO
+包括两种服务，及映射服务和重构服务
 
-### 数据抽取
+```
+- map
+  - uuid
+    - XXX.zip
+	- invoke
+- refactor
+  - uuid
+    - XXX.zip
+	- invoke
+```
 
-TODO
+### store_data_Resource_files
 
-### 数据服务
+其中数据存储的实际文件，以UUID为名，其文件名和文件后缀存储在数据库中
 
-TODO
+```
+- UUID1
+- UUID2
+- UUID3
+...
+```
+
 
 

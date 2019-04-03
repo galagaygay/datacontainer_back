@@ -63,8 +63,8 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
                              @RequestParam ("output") List<String> output
     ) throws IOException {
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
-        String position = refactorMethod.getPosition();
-        String basePath = pathConfig.getBase() + File.separator + position;
+        String invokePosition = refactorMethod.getInvokePosition();
+        String basePath = pathConfig.getBase() + File.separator + invokePosition;
         List<String> inputLocal = new ArrayList<>();
         for (String s : input) {
             inputLocal.add(pathConfig.getBase() + File.separator + s);
@@ -73,8 +73,8 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
         List<String> out = new ArrayList<>();
         for (String s : output) {
             String uuid = UUID.randomUUID().toString();
-            outputLocal.add(pathConfig.getOnlineCallFiles() + File.separator + uuid + File.separator + s);
-            out.add("online_call_files" + File.separator + uuid + File.separator + s);
+            outputLocal.add(pathConfig.getDataProcess() + File.separator + uuid + File.separator + s);
+            out.add("data_process" + File.separator + uuid + File.separator + s);
         }
         ProcessResponse processResponse = MethodInvokeUtils.computeRefactor(basePath, method, inputLocal, outputLocal);
 
@@ -97,7 +97,7 @@ public class RefactorMethodController implements BaseController<RefactorMethod, 
     @RequestMapping (value = "/{id}/getMethod", method = RequestMethod.GET)
     public JsonResult invoke(@PathVariable ("id") String id) throws IOException {
         RefactorMethod refactorMethod = refactorMethodServiceImp.get(id);
-        String position = refactorMethod.getPosition();
-        return ResultUtils.success(FileUtils.readFileToString(new File(pathConfig.getBase() + File.separator + position + File.separator + "methods.xml"), "utf-8"));
+        String invokePosition = refactorMethod.getInvokePosition();
+        return ResultUtils.success(FileUtils.readFileToString(new File(pathConfig.getBase() + File.separator + invokePosition + File.separator + "methods.xml"), "utf-8"));
     }
 }
