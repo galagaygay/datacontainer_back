@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.util.Date;
@@ -75,5 +76,9 @@ public class JwtUtils {
         } catch (Exception ex) {
             return null;
         }
+    }
+
+    public static String getTokenFromRequest(HttpServletRequest request) {
+        return request.getHeader("Authorization") != null ? request.getHeader("Authorization") : (request.getParameter("token") != null ? request.getParameter("token") : null);
     }
 }

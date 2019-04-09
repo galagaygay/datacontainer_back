@@ -16,13 +16,21 @@ import java.util.List;
  */
 public interface DataResourceRepository extends MongoRepository<DataResource, String> {
 
-    Page<DataResource> findByAuthor(String author, Pageable pageable);
+    DataResource getBySourceStoreId(String sourceStoreId);
 
-    List<DataResource> findByAuthor(String author);
+    Page<DataResource> getByAuthor(String author, Pageable pageable);
 
-    List<DataResource> findByDataItemId(String dataItemId);
+    List<DataResource> getByAuthor(String author);
 
-    List<DataResource> findByMdlId(String mdlId);
+    Page<DataResource> getByDataItemId(String author, Pageable pageable);
 
-    List<DataResource> findByFileNameContains(String fileName);
+    List<DataResource> getByDataItemId(String dataItemId);
+
+    Page<DataResource> getByMdlId(String author, Pageable pageable);
+
+    List<DataResource> getByMdlId(String mdlId);
+
+    Page<DataResource> getByFileNameContains(String author, Pageable pageable);
+
+    List<DataResource> getByFileNameContains(String fileName);
 }

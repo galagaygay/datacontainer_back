@@ -1,9 +1,7 @@
 package njnu.opengms.container.controller.common;
 
 
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import njnu.opengms.container.annotation.NeedAuth;
 import njnu.opengms.container.annotation.SysLogs;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.service.common.UpdateService;
@@ -20,15 +18,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface UpdateController<UID, UD, S extends UpdateService<UID, UD>> {
+public interface UpdateController<E, UD, UID, S extends UpdateService<E, UD, UID>> {
     @RequestMapping (value = "/{id}", method = RequestMethod.PUT)
     @ApiOperation (value = "更新指定id的Entity")
     @SysLogs ("更新指定ID的Entity的信息")
-    @NeedAuth ()
-    @ApiImplicitParam (paramType = "header", name = "Authorization", value = "身份认证Token", required = true)
+//    @NeedAuth ()
+//    @ApiImplicitParam (paramType = "header", name = "Authorization", value = "身份认证Token", required = true)
     default JsonResult update(@PathVariable ("id") UID id, @RequestBody UD updateDTO) {
-        getService().update(id, updateDTO);
-        return ResultUtils.success(id + "：更新成功");
+        return ResultUtils.success(getService().update(id, updateDTO));
     }
 
     S getService();

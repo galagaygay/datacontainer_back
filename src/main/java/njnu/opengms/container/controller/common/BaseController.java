@@ -19,9 +19,9 @@ import njnu.opengms.container.service.common.BaseService;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface BaseController<E, AD, UD, FD, VO, UID, S extends BaseService<E, AD, UD, FD, VO, UID>> extends
-        CreateController<AD, S>,
+public interface BaseController<E, VO, AD, FD, UD, UID, S extends BaseService<E, VO, AD, FD, UD, UID>> extends
+        CreateController<E, AD, S>,
         DeleteController<UID, S>,
-        QueryController<E, FD, VO, UID, S>,
-        UpdateController<UID, UD, S> {
+        QueryController<E, VO, FD, UID, S>,
+        UpdateController<E, UD, UID, S> {
 }

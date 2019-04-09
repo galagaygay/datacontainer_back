@@ -13,7 +13,7 @@ import java.util.List;
  * @Version 1.0.0
  */
 public interface MappingMethodRepository extends MongoRepository<MappingMethod, String> {
-    List<MappingMethod> findBySupportedUdxSchema(String id);
+    List<MappingMethod> getBySupportedUdxSchema(String id);
 
-    MappingMethod findByName(String name);
+    MappingMethod getByName(String name);
 }

@@ -75,5 +75,8 @@
 ...
 ```
 
+# 编码问题
+
+为了兼容geotools读取Meta，必须设置项目编码为UTF-8 设置虚拟机启动也为`-Dfile.encoding=UTF-8`
 
 

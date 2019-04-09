@@ -1,6 +1,5 @@
 package njnu.opengms.container.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.mongodb.BasicDBObject;
 import com.ngis.udx.Transfer;
 import com.ngis.udx.data.UdxData;
@@ -12,7 +11,8 @@ import com.ngis.udx.schema.UdxSchema;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.AsyncTaskComponent;
 import njnu.opengms.container.getmeta.DataStoreMetaGet;
-import njnu.opengms.container.getmeta.impl.ShapefileMeta;
+import njnu.opengms.container.getmeta.impl.ShapefileMetaGet;
+import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.pojo.SchemaDoc;
 import njnu.opengms.container.repository.SchemaDocRepository;
 import njnu.opengms.container.service.MappingMethodServiceImp;
@@ -25,12 +25,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.BasicQuery;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -153,11 +155,21 @@ public class TestController {
 
     @RequestMapping (value = "/test9", method = RequestMethod.GET)
     public JsonResult test9() throws IOException, DocumentException {
-        DataStoreMetaGet metaGet = new ShapefileMeta();
-        JSONObject jsonObject = metaGet.getMeta(new File("F:/sunlingzhi/datacontainer_store/geoserver_files/shapefiles/24a6b80a-e15b-49f2-bebc-d03e427a5051_QXJM.shp"));
-        return ResultUtils.success(jsonObject);
+        DataStoreMetaGet metaGet = new ShapefileMetaGet();
+        metaGet.getMeta(new File("F:/sunlingzhi/datacontainer_store/geoserver_files/shapefiles/24a6b80a-e15b-49f2-bebc-d03e427a5051_QXJM.shp"));
+        return ResultUtils.success();
     }
 
+    @RequestMapping (value = "/test10", method = RequestMethod.GET)
+    public JsonResult test10() throws IOException, DocumentException {
+        String[] s = {"432952ae-0610-42a8-8964-27cc2618f8e1", "432952ae-0610-42a8-8964-27cc2618f8e2", "432952ae-0610-42a8-8964-27cc2618f8e3"};
+        List<String> sourceStoreIdList = Arrays.asList(s);
+        Criteria c = new Criteria();
+        c.and("sourceStoreId").in(sourceStoreIdList);
+        Query query = new Query(c);
+        List<DataResource> result = mongoTemplate.find(query, DataResource.class);
+        return ResultUtils.success();
+    }
 
 
 }

@@ -13,7 +13,7 @@ import java.util.List;
  * @Version 1.0.0
  */
 public interface SchemaDocRepository extends MongoRepository<SchemaDoc, String> {
-    SchemaDoc findByName(String name);
+    SchemaDoc getByName(String name);
 
-    List<SchemaDoc> findByNameContainsIgnoreCase(String name);
+    List<SchemaDoc> getByNameContainsIgnoreCase(String name);
 }

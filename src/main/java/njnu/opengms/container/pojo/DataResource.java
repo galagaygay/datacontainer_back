@@ -27,7 +27,6 @@ import java.util.List;
 public class DataResource {
     @Id
     String id;
-    String sourceStoreId;
     String author;
     DataResourceTypeEnum type;
     String dataItemId;
@@ -36,6 +35,7 @@ public class DataResource {
     String suffix;
     List<String> tags;
     Date createDate;
+    String sourceStoreId;
 
     boolean toGeoserver;
     String layerName;

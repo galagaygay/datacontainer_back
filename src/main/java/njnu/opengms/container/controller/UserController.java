@@ -1,13 +1,9 @@
 package njnu.opengms.container.controller;
 
 import njnu.opengms.container.bean.JsonResult;
-import njnu.opengms.container.controller.common.BaseController;
 import njnu.opengms.container.dto.user.AddUserDTO;
-import njnu.opengms.container.enums.ResultEnum;
-import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.User;
-import njnu.opengms.container.service.UserServiceImp;
-import njnu.opengms.container.utils.JwtUtils;
+import njnu.opengms.container.service.UserService;
 import njnu.opengms.container.utils.ResultUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,29 +20,20 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping (value = "/user")
-public class UserController implements BaseController<User, AddUserDTO, Object, Object, Object, String, UserServiceImp> {
+public class UserController {
 
     @Autowired
-    UserServiceImp userServiceImp;
-
-    @Override
-    public UserServiceImp getService() {
-        return userServiceImp;
-    }
+    UserService userService;
 
     @RequestMapping (value = "/login", method = RequestMethod.POST)
     public JsonResult doLogin(@RequestBody User userIn) {
-        User user = userServiceImp.findUserByUserName(userIn.getUsername());
-        if (user == null) {
-            throw new MyException(ResultEnum.NO_OBJECT);
-        } else {
-            if (user.getPassword().equals(userIn.getPassword())) {
-                String jwtToken = JwtUtils.generateToken(user.getId(), userIn.getUsername(), userIn.getPassword());
-                return ResultUtils.success("Bearer" + " " + jwtToken);
-            } else {
-                throw new MyException(ResultEnum.USER_PASSWORD_NOT_MATCH);
-            }
-        }
+        return ResultUtils.success(userService.doLogin(userIn));
+    }
+
+    @RequestMapping (value = "/register", method = RequestMethod.POST)
+    public JsonResult doRegister(@RequestBody AddUserDTO addUserDTO) {
+        userService.add(addUserDTO);
+        return ResultUtils.success("用户创建成功");
     }
 
     @RequestMapping (value = "/all-permission-tag", method = RequestMethod.POST)

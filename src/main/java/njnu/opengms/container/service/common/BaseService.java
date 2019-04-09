@@ -14,9 +14,9 @@ package njnu.opengms.container.service.common;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface BaseService<E, AD, UD, FD, VO, UID> extends
-        CreateService<AD>,
-        QueryService<E, FD, VO, UID>,
+public interface BaseService<E, VO, AD, FD, UD, UID> extends
+        CreateService<E, AD>,
+        QueryService<E, VO, FD, UID>,
         DeleteService<UID>,
-        UpdateService<UID, UD> {
+        UpdateService<E, UD, UID> {
 }

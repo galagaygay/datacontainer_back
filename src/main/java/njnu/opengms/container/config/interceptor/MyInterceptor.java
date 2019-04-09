@@ -1,5 +1,6 @@
 package njnu.opengms.container.config.interceptor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -13,7 +14,9 @@ import javax.servlet.http.HttpServletResponse;
  * @Date 2018/11/14
  * @Version 1.0.0
  */
+@Slf4j
 public class MyInterceptor implements HandlerInterceptor {
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         long startTime = System.currentTimeMillis();
@@ -31,6 +34,10 @@ public class MyInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        System.out.println("handlingTime:" + request.getAttribute("handling Time:") + "ms");
+        if (request.getAttribute("handling Time:") == null) {
+            log.error(request.getMethod() + " " + request.getRequestURL().toString() + "?" + request.getQueryString() + " error");
+        } else {
+            log.info("handlingTime:" + request.getAttribute("handling Time:") + "ms");
+        }
     }
 }

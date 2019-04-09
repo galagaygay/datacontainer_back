@@ -17,6 +17,5 @@ import lombok.NoArgsConstructor;
 public class UpdateDataResourceDTO {
     boolean toGeoserver;
     String layerName;
-
     String meta;
 }

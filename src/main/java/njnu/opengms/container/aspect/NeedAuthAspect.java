@@ -4,7 +4,7 @@ import io.jsonwebtoken.Claims;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.User;
-import njnu.opengms.container.service.UserServiceImp;
+import njnu.opengms.container.service.UserService;
 import njnu.opengms.container.utils.JwtUtils;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -32,7 +32,7 @@ public class NeedAuthAspect {
     private static final String TOKEN_PREFIX = "Bearer";
 
     @Autowired
-    UserServiceImp userServiceImp;
+    UserService userServiceImp;
 
     @Pointcut ("@annotation(njnu.opengms.container.annotation.NeedAuth)")
     public void poin() {
@@ -45,7 +45,7 @@ public class NeedAuthAspect {
 
         HttpServletResponse response = attributes.getResponse();
 
-        String auth = request.getHeader("Authorization");
+        String auth = JwtUtils.getTokenFromRequest(request);
         if (null == auth || !auth.startsWith(TOKEN_PREFIX)) {
             response.setStatus(401);
             throw new MyException(ResultEnum.NO_TOKEN);

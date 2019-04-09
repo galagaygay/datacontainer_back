@@ -9,7 +9,7 @@ import org.springframework.data.domain.Page;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface QueryService<E, FD, VO, UID> {
+public interface QueryService<E, VO, FD, UID> {
     /**
      * 获取所有实体（分页）
      *

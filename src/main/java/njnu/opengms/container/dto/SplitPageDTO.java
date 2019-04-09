@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Data
 public abstract class SplitPageDTO {
-    private Integer page = 1;
+    private Integer page = 0;
     private Integer pageSize = 10;
     private Boolean asc = false;
     private List<String> properties;

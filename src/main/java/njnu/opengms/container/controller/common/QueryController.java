@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface QueryController<E, FD, VO, UID, S extends QueryService<E, FD, VO, UID>> {
+public interface QueryController<E, VO, FD, UID, S extends QueryService<E, VO, FD, UID>> {
     @RequestMapping (value = "", method = RequestMethod.GET)
-    @ApiOperation (value = "分页获取所有列表")
+    @ApiOperation (value = "分页获取所有列表,properties是排序字段推荐使用createDate")
     default JsonResult list(FD findDTO) {
         return ResultUtils.success(getService().list(findDTO));
     }
@@ -36,6 +36,4 @@ public interface QueryController<E, FD, VO, UID, S extends QueryService<E, FD, V
     default JsonResult get(@PathVariable ("id") UID id) {
         return ResultUtils.success(getService().get(id));
     }
-
-
 }

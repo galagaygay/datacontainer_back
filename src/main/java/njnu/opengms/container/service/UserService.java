@@ -5,10 +5,10 @@ import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.pojo.User;
 import njnu.opengms.container.repository.UserRepository;
-import njnu.opengms.container.service.common.BaseService;
+import njnu.opengms.container.utils.JwtUtils;
+import njnu.opengms.container.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -21,14 +21,14 @@ import java.util.Date;
  * @Version 1.0.0
  */
 @Service
-public class UserServiceImp implements BaseService<User, AddUserDTO, Object, Object, Object, String> {
+public class UserService {
 
     @Autowired
     UserRepository userRepository;
 
-    @Override
+
     public void add(AddUserDTO addDTO) {
-        if (userRepository.findUserByUsername(addDTO.getUsername()) != null) {
+        if (userRepository.getUserByUsername(addDTO.getUsername()) != null) {
             throw new MyException(ResultEnum.EXIST_OBJECT);
         }
         User user = new User();
@@ -37,35 +37,29 @@ public class UserServiceImp implements BaseService<User, AddUserDTO, Object, Obj
         userRepository.insert(user);
     }
 
-    @Override
-    public void remove(String id) {
-        //TODO
+
+    public UserVO get(String s) {
+        User user = userRepository.findById(s).orElseGet(() -> {
+
+            throw new MyException(ResultEnum.NO_OBJECT);
+        });
+        UserVO vo = new UserVO();
+        BeanUtils.copyProperties(user, vo);
+        return vo;
     }
 
-    @Override
-    public Page<Object> list(Object findDTO) {
-        //TODO
-        return null;
-    }
-
-    @Override
-    public User get(String s) {
-        return userRepository.findById(s).get();
-    }
-
-    @Override
-    public User getByExample(User user) {
-        return null;
-    }
-
-    @Override
-    public long count() {
-        return 0;
-    }
-
-    @Override
-    public void update(String id, Object updateDTO) {
-        //TODO
+    public String doLogin(User userIn) {
+        User user = this.findUserByUserName(userIn.getUsername());
+        if (user == null) {
+            throw new MyException(ResultEnum.NO_OBJECT);
+        } else {
+            if (user.getPassword().equals(userIn.getPassword())) {
+                String jwtToken = JwtUtils.generateToken(user.getId(), userIn.getUsername(), userIn.getPassword());
+                return "Bearer" + " " + jwtToken;
+            } else {
+                throw new MyException(ResultEnum.USER_PASSWORD_NOT_MATCH);
+            }
+        }
     }
 
     /**
@@ -76,6 +70,7 @@ public class UserServiceImp implements BaseService<User, AddUserDTO, Object, Obj
      * @return
      */
     public User findUserByUserName(String userName) {
-        return userRepository.findUserByUsername(userName);
+        return userRepository.getUserByUsername(userName);
     }
+
 }

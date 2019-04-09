@@ -7,11 +7,11 @@ package njnu.opengms.container.service.common;
  * @Date 2018/9/8
  * @Version 1.0.0
  */
-public interface CreateService<AD> {
+public interface CreateService<E, AD> {
     /**
      * 创建实体
      *
      * @param addDTO 实体数据
      */
-    void add(AD addDTO);
+    E create(AD addDTO);
 }

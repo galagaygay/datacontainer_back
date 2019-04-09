@@ -12,4 +12,6 @@ import njnu.opengms.container.dto.SplitPageDTO;
  */
 @Data
 public class FindDataResourceDTO extends SplitPageDTO {
+    String type;
+    String value;
 }

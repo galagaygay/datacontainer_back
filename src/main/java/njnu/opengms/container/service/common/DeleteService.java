@@ -1,5 +1,7 @@
 package njnu.opengms.container.service.common;
 
+import java.io.IOException;
+
 /**
  * @InterfaceName DeleteService
  * @Description 删除实体Service
@@ -13,5 +15,5 @@ public interface DeleteService<UID> {
      *
      * @param id 实体id
      */
-    void remove(UID id);
+    void delete(UID id) throws IOException;
 }

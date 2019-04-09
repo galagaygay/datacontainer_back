@@ -1,11 +1,14 @@
 package njnu.opengms.container.controller;
 
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import njnu.opengms.container.bean.JsonResult;
 import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
+import njnu.opengms.container.pojo.FileResource;
+import njnu.opengms.container.repository.FileResourceRepository;
 import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.utils.ZipUtils;
 import org.apache.commons.io.FileUtils;
@@ -31,46 +34,76 @@ import java.util.UUID;
 @RestController
 @RequestMapping (value = "/file")
 public class FileController {
-
+    private static final String TYPE_MAP = "map";
+    private static final String TYPE_REFACTOR = "refactor";
+    private static final String TYPE_DATA_PROCESS = "data_process";
+    private static final String TYPE_STORE_DATARESOURCE = "store_dataResource_files";
 
     @Autowired
     PathConfig pathConfig;
 
+    @Autowired
+    FileResourceRepository fileResourceRepository;
+
+
     @ApiOperation (value = "上传文件", notes = "上传映射、重构服务实体、在线调用的输入文件、数据资源")
-    @ApiImplicitParam (name = "type", value = "上传实体的类型,可以为map、refactor、data_process、store_dataResource_files", dataType = "string", paramType = "path", required = true)
+    @ApiImplicitParams ({
+            @ApiImplicitParam (name = "type", value = "上传实体的类型,可以为map、refactor、data_process、store_dataResource_files", dataType = "string", paramType = "path", required = true),
+            @ApiImplicitParam (name = "md5", value = "当上传类型为store_dataResource_files，可以添加由spark-md5.js提供的md5值，以此做快速上传", dataType = "string", paramType = "query", required = false)}
+    )
     @RequestMapping (value = "/upload/{type}", method = RequestMethod.POST)
-    JsonResult upload(@RequestParam ("file") MultipartFile file,
-                      @PathVariable ("type") String type) throws IOException {
+    JsonResult upload(@PathVariable ("type") String type, @RequestParam ("file") MultipartFile file,
+                      @RequestParam (value = "md5", required = false) String md5
+    ) throws IOException {
         String path;
-        if (("map").equals(type)) {
+        if (TYPE_MAP.equals(type)) {
             path = pathConfig.getServicesMap();
-        } else if (("refactor").equals(type)) {
+        } else if (TYPE_REFACTOR.equals(type)) {
             path = pathConfig.getServicesRefactor();
-        } else if ("data_process".equals(type)) {
+        } else if (TYPE_DATA_PROCESS.equals(type)) {
             path = pathConfig.getDataProcess();
-        } else if ("store_dataResource_files".equals(type)) {
+        } else if (TYPE_STORE_DATARESOURCE.equals(type)) {
             //不用UUID做文件夹嵌套的
             path = pathConfig.getStoreFiles();
             String uuid = UUID.randomUUID().toString();
-            FileUtils.copyInputStreamToFile(file.getInputStream(), new File(path + File.separator + uuid));
+            file.transferTo(new File(path + File.separator + uuid));
+            if (md5 != null) {
+                FileResource fileResource = new FileResource();
+                fileResource.setMd5(md5);
+                fileResource.setSourceStoreId(uuid);
+                fileResourceRepository.insert(fileResource);
+            }
             return ResultUtils.success(uuid);
         } else {
             throw new MyException(ResultEnum.UPLOAD_TYPE_ERROR);
         }
         path += File.separator + (UUID.randomUUID().toString());
-        FileUtils.copyInputStreamToFile(file.getInputStream(), new File(path + File.separator + file.getOriginalFilename()));
+        file.transferTo(new File(path + File.separator + file.getOriginalFilename()));
         // 针对映射和重构需要进行解压
         // 注意解压路径是同级目录下的invoke文件夹
-        if (("map").equals(type) || ("refactor").equals(type)) {
+        if (TYPE_MAP.equals(type) || TYPE_REFACTOR.equals(type)) {
             ZipUtils.unZipFiles(new File(path + File.separator + file.getOriginalFilename()), path + File.separator + "invoke");
         }
         int index = path.indexOf(pathConfig.getBase()) + pathConfig.getBase().length() + 1;
         return ResultUtils.success(path.substring(index, path.length()) + File.separator + file.getOriginalFilename());
     }
 
+    @ApiOperation (value = "快速上传文件", notes = "上传映射、重构服务实体、在线调用的输入文件、数据资源")
+    @ApiImplicitParam (name = "md5", value = "由spark-md.js在前端解析出文件的md5值", dataType = "string", paramType = "path", required = true)
+    @RequestMapping (value = "/fastUpload/{md5}", method = RequestMethod.POST)
+    JsonResult fastUpload(@PathVariable ("md5") String md5) {
+        FileResource fileResource = fileResourceRepository.getFirstByMd5(md5);
+        if (fileResource != null) {
+            return ResultUtils.success(fileResource.getSourceStoreId());
+        } else {
+            throw new MyException("该md5:" + md5 + ",不存在对应资源，请使用普通上传");
+        }
+    }
 
+
+    @Deprecated
     @ApiOperation (value = "根据映射和重构服务存储在后台的storePath路径，下载对应服务压缩包", notes = "根据文件的路径下载文件,这里用post方法是因为数据库存储的路径是\\,get请求拼接字符串需要对\\进行编码，所以使用post方法")
-    @RequestMapping (value = "/download", method = RequestMethod.POST)
+    @RequestMapping (value = "/download/service", method = RequestMethod.POST)
     ResponseEntity<InputStreamResource> download(@RequestParam ("path") String path) throws IOException {
         File file = new File(pathConfig.getBase() + File.separator + path);
         HttpHeaders headers = new HttpHeaders();
@@ -86,23 +119,6 @@ public class FileController {
                 .body(new InputStreamResource(FileUtils.openInputStream(file)));
     }
 
-    @ApiOperation (value = "下载数据资源", notes = "sourceStoreId存储了文件的位置，其fileName文件名和suffix后缀也需要传递给后台")
-    @RequestMapping (value = "/download_data_resource", method = RequestMethod.GET)
-    ResponseEntity<InputStreamResource> download(@RequestParam ("sourceStoreId") String sourceStoreId,
-                                                 @RequestParam ("fileName") String fileName,
-                                                 @RequestParam ("suffix") String suffix) throws IOException {
-        File file = new File(pathConfig.getStoreFiles() + File.separator + sourceStoreId);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-        headers.add("Content-Disposition", "attachment;filename=" + fileName + "." + suffix);
-        headers.add("Pragma", "no-cache");
-        headers.add("Expires", "0");
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .contentLength(file.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new InputStreamResource(FileUtils.openInputStream(file)));
-    }
+
 }
 

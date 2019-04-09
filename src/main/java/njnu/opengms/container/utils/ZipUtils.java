@@ -48,7 +48,6 @@ public class ZipUtils {
                     zipFile(out, path + srcPath, files);
                 } else {
                     FileInputStream in = new FileInputStream(srcFiles[i]);
-                    System.out.println(path + srcFiles[i].getName());
                     out.putNextEntry(new ZipEntry(path + srcFiles[i].getName()));
                     int len;
                     while ((len = in.read(buf)) > 0) {

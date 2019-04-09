@@ -3,6 +3,7 @@ package njnu.opengms.container.getmeta.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import njnu.opengms.container.getmeta.DataStoreMetaGet;
+import njnu.opengms.container.getmeta.meta.ShapefileMeta;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Query;
@@ -20,30 +21,37 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * @ClassName ShapefileMeta
+ * @ClassName ShapefileMetaGet
  * @Description 目前仅支持从shp文件中获取
  * @Author sun_liber
  * @Date 2019/4/2
  * @Version 1.0.0
  */
-public class ShapefileMeta implements DataStoreMetaGet {
+public class ShapefileMetaGet implements DataStoreMetaGet<ShapefileMeta> {
     @Override
-    public JSONObject getMeta(File file) throws IOException {
+    public ShapefileMeta getMeta(File file) throws IOException {
+        ShapefileMeta shapefileMeta = new ShapefileMeta();
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
         ((ShapefileDataStore) store).setCharset(Charset.forName("UTF-8"));
 
         SimpleFeatureSource featureSource = store.getFeatureSource();
 
-        String name = featureSource.getName().getLocalPart();
-        ReferencedEnvelope bounds = featureSource.getBounds();
-        Set<String> keywords = featureSource.getInfo().getKeywords();
+        shapefileMeta.setName(featureSource.getName().getLocalPart());
+
         int count = featureSource.getCount(Query.ALL);
+        shapefileMeta.setFeatureCount(count);
+
         SimpleFeatureType schema = featureSource.getSchema();
 
         String geometry = String.valueOf(schema.getGeometryDescriptor().getType().getName());
+        shapefileMeta.setGeometry(geometry);
+
         List<Map<String, String>> fields = new ArrayList<>();
         for (PropertyDescriptor propertyDescriptor : schema.getDescriptors()) {
             Map<String, String> map = new HashMap<>(3);
@@ -55,20 +63,17 @@ public class ShapefileMeta implements DataStoreMetaGet {
                 fields.add(map);
             }
         }
-        JSONObject envelope = new JSONObject();
-        envelope.put("lowerConer", bounds.getLowerCorner().getCoordinate());
-        envelope.put("upperConer", bounds.getUpperCorner().getCoordinate());
 
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("name", name);
-        jsonObject.put("keywords", keywords);
-        jsonObject.put("geometry", geometry);
-        jsonObject.put("count", count);
-        jsonObject.put("proj", bounds.getCoordinateReferenceSystem().toString());
-        jsonObject.put("envelope", envelope);
-        jsonObject.put("fields", fields);
-        store.dispose();
-        return jsonObject;
+        shapefileMeta.setFields(fields);
+
+        ReferencedEnvelope bounds = featureSource.getBounds();
+        shapefileMeta.setLowerCorner(bounds.getLowerCorner().getCoordinate());
+        shapefileMeta.setUpperCorner(bounds.getUpperCorner().getCoordinate());
+
+        shapefileMeta.setProj(bounds.getCoordinateReferenceSystem().toString());
+
+
+        return shapefileMeta;
     }
 
     public JSONArray readDBF(File file, Integer from, Integer to) throws IOException {
@@ -90,6 +95,8 @@ public class ShapefileMeta implements DataStoreMetaGet {
                 }
                 jsonArray.add(jsonObject);
             }
+            dbfReader.close();
+            in.close();
             return jsonArray;
         } else {
             while (dbfReader.hasNext()) {

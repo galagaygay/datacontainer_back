@@ -1,29 +1,20 @@
 package njnu.opengms.container.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import njnu.opengms.container.bean.JsonResult;
-import njnu.opengms.container.bean.ProcessResponse;
-import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.controller.common.BaseController;
 import njnu.opengms.container.dto.mappingmethod.AddMappingMethodDTO;
 import njnu.opengms.container.dto.mappingmethod.FindMappingMethodDTO;
 import njnu.opengms.container.dto.mappingmethod.UpdateMappingMethodDTO;
 import njnu.opengms.container.pojo.MappingMethod;
 import njnu.opengms.container.service.MappingMethodServiceImp;
-import njnu.opengms.container.utils.MethodInvokeUtils;
 import njnu.opengms.container.utils.ResultUtils;
 import njnu.opengms.container.vo.MappingMethodVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
 
 /**
  * @ClassName MappingMethodController
@@ -34,12 +25,9 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping (value = "/map")
-public class MappingMethodController implements BaseController<MappingMethod, AddMappingMethodDTO, UpdateMappingMethodDTO, FindMappingMethodDTO, MappingMethodVO, String, MappingMethodServiceImp> {
+public class MappingMethodController implements BaseController<MappingMethod, MappingMethodVO, AddMappingMethodDTO, FindMappingMethodDTO, UpdateMappingMethodDTO, String, MappingMethodServiceImp> {
     @Autowired
     MappingMethodServiceImp mappingMethodServiceImp;
-
-    @Autowired
-    PathConfig pathConfig;
 
     @Override
     public MappingMethodServiceImp getService() {
@@ -49,32 +37,15 @@ public class MappingMethodController implements BaseController<MappingMethod, Ad
     @ApiImplicitParams ({
             @ApiImplicitParam (name = "id", value = "数据映射对应的id"),
             @ApiImplicitParam (name = "callType", value = "可选值为src2udx,udx2src"),
-            @ApiImplicitParam (name = "input", value = "上传文件的路径"),
-            @ApiImplicitParam (name = "output", value = "下载文件的名称"),
+            @ApiImplicitParam (name = "input", value = "上传文件的路径", example = "data_process/uid/in.txt"),
+            @ApiImplicitParam (name = "output", value = "下载文件的名称", example = "out.udx"),
     })
-    @RequestMapping (value = "/invoke", method = RequestMethod.GET)
-    public JsonResult invoke(@RequestParam ("id") String id,
+    @RequestMapping (value = "/{id}/invoke", method = RequestMethod.GET)
+    public JsonResult invoke(@PathVariable ("id") String id,
                              @RequestParam ("callType") String callType,
                              @RequestParam ("input") String input,
                              @RequestParam ("output") String output
     ) throws IOException {
-        //根据映射方法ID查找映射方法存储的路径
-        MappingMethod mappingMethod = mappingMethodServiceImp.get(id);
-        String invokePosition = mappingMethod.getInvokePosition();
-        //调用方法
-        String uid = UUID.randomUUID().toString();
-        String basePath = pathConfig.getBase() + File.separator + invokePosition;
-        String inputLocal = pathConfig.getBase() + File.separator + input;
-        String outputLocal = pathConfig.getDataProcess() + File.separator + uid + File.separator + output;
-        ProcessResponse processResponse = MethodInvokeUtils.computeMap(basePath, callType, inputLocal, outputLocal);
-        //返回cmd命令执行情况，以及输出数据路径
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("processResponse", processResponse);
-        if (processResponse.getFlag()) {
-            jsonObject.put("output", "data_process" + File.separator + uid + File.separator + output);
-        } else {
-            jsonObject.put("output", null);
-        }
-        return ResultUtils.success(jsonObject);
+        return ResultUtils.success(mappingMethodServiceImp.invoke(id, callType, input, output));
     }
 }
