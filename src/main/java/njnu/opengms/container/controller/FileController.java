@@ -88,7 +88,7 @@ public class FileController {
         return ResultUtils.success(path.substring(index, path.length()) + File.separator + file.getOriginalFilename());
     }
 
-    @ApiOperation (value = "快速上传文件", notes = "上传映射、重构服务实体、在线调用的输入文件、数据资源")
+    @ApiOperation (value = "快速上传文件", notes = "上传数据资源")
     @ApiImplicitParam (name = "md5", value = "由spark-md.js在前端解析出文件的md5值", dataType = "string", paramType = "path", required = true)
     @RequestMapping (value = "/fastUpload/{md5}", method = RequestMethod.POST)
     JsonResult fastUpload(@PathVariable ("md5") String md5) {

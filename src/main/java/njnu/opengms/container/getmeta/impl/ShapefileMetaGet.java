@@ -38,7 +38,7 @@ public class ShapefileMetaGet implements DataStoreMetaGet<ShapefileMeta> {
     public ShapefileMeta getMeta(File file) throws IOException {
         ShapefileMeta shapefileMeta = new ShapefileMeta();
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
-        ((ShapefileDataStore) store).setCharset(Charset.forName("UTF-8"));
+        ((ShapefileDataStore) store).setCharset(Charset.forName("GBK"));
 
         SimpleFeatureSource featureSource = store.getFeatureSource();
 
@@ -78,7 +78,7 @@ public class ShapefileMetaGet implements DataStoreMetaGet<ShapefileMeta> {
 
     public JSONArray readDBF(File file, Integer from, Integer to) throws IOException {
         FileChannel in = new FileInputStream(file).getChannel();
-        DbaseFileReader dbfReader = new DbaseFileReader(in, false, Charset.forName("UTF-8"));
+        DbaseFileReader dbfReader = new DbaseFileReader(in, false, Charset.forName("GBK"));
         DbaseFileHeader header = dbfReader.getHeader();
         int fields = header.getNumFields();
 

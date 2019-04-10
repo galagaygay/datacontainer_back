@@ -31,9 +31,6 @@ public class GeotiffMetaGet implements DataStoreMetaGet<GeotiffMeta> {
 //        }else{
 //            throw  new MyException("format is :"+format.getName()+" ,not GeoTiffFormat");
 //        }
-//
-//
-//
 //        GridCoverage2DReader reader = format.getReader(file, hints);
 //        GridCoverage2D coverage = reader .read(null);
 
