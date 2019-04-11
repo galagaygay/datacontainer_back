@@ -75,6 +75,12 @@
 ...
 ```
 
+### 第三方工具
+
+1.gdal 
+- 下载并编译gdal
+- application.properties 文件夹下配置 path.getGdal 路径，如"${web.lib-path}/gdal/bin/gdal/apps"
+
 # 编码问题
 
 为了兼容geotools读取Meta，必须设置项目编码为UTF-8 设置虚拟机启动也为`-Dfile.encoding=UTF-8`

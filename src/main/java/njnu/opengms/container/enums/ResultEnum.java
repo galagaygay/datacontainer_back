@@ -21,7 +21,8 @@ public enum ResultEnum {
     NOTSUPPORT_GETMETA_ERROR(-11, "获取meta不支持当前类型"),
     REMOTE_SERVICE_ERROR(-12, "远程服务调用出错"),
     FILE_NOT_FOUND(-13,"file not found"),
-    FILE_TRANSLATE_FAILED(-14,"Failed to translate file");
+    FILE_TRANSLATE_FAILED(-14,"Failed to translate file"),
+    NO_GDAL_LIB(-15,"No gdal lib");
 
     private Integer code;
 
