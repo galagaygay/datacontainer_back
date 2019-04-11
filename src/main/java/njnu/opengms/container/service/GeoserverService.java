@@ -106,6 +106,10 @@ public class GeoserverService {
     public void sgrdToGeotiff(String id,String dir) throws IOException {
         //使用gdal将sgrd转换为tif数据
         //获取mgrd文件的绝对路径
+        File gdalDir = new File(pathConfig.getGetGdal());
+        if(!gdalDir.exists()){
+            throw new MyException(ResultEnum.NO_GDAL_LIB);
+        }
 //        String mgrdPath = MyFileUtils.getSpecificFile(dir, ".sdat");
         Collection<File> fileCollection = FileUtils.listFiles(new File(dir), new SuffixFileFilter(".sdat"), null);
         File file = fileCollection.iterator().next();
