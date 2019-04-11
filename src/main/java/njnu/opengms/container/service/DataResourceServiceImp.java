@@ -11,7 +11,9 @@ import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.getmeta.DataStoreMetaGet;
 import njnu.opengms.container.getmeta.impl.GeotiffMetaGet;
+import njnu.opengms.container.getmeta.impl.SgrdMetaGet;
 import njnu.opengms.container.getmeta.impl.ShapefileMetaGet;
+import njnu.opengms.container.getmeta.meta.GeotiffMeta;
 import njnu.opengms.container.pojo.DataResource;
 import njnu.opengms.container.repository.DataResourceRepository;
 import njnu.opengms.container.service.common.BaseService;
@@ -191,13 +193,22 @@ public class DataResourceServiceImp implements BaseService<DataResource, DataRes
             DataStoreMetaGet metaGet = new ShapefileMetaGet();
             jsonString = JSONObject.toJSONString(metaGet.getMeta(real_file));
             return jsonString;
-        } else {
+        } else if(dataResource.getType().equals(DataResourceTypeEnum.GEOTIFF)) {
             //GEOTIFF
             fileCollection = FileUtils.listFiles(dir, new SuffixFileFilter(".tif"), null);
             real_file = fileCollection.iterator().next();
             DataStoreMetaGet metaGet = new GeotiffMetaGet();
             jsonString = JSONObject.toJSONString(metaGet.getMeta(real_file));
             return jsonString;
+        }else if(dataResource.getType().equals(DataResourceTypeEnum.SGRD)){
+            fileCollection = FileUtils.listFiles(dir, new SuffixFileFilter(".mgrd"), null);
+            real_file = fileCollection.iterator().next();
+            DataStoreMetaGet metaGet = new SgrdMetaGet();
+            GeotiffMeta meta = (GeotiffMeta) metaGet.getMeta(real_file);
+            jsonString = JSONObject.toJSONString(meta);
+            return jsonString;
+        }else{
+            throw new MyException(ResultEnum.NOTSUPPORT_GETMETA_ERROR);
         }
     }
 

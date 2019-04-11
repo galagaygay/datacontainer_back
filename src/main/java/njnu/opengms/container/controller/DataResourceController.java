@@ -68,7 +68,7 @@ public class DataResourceController implements BaseController<DataResource, Data
     PathConfig pathConfig;
 
 
-    @ApiImplicitParam (name = "type", value = "type可以为author、mdl、dataItem、fileName，注意这里的返回是不带分页的", dataType = "string", paramType = "path", required = true)
+    @ApiImplicitParam (name = "type", value = "type可以为author、mdl、dataItem、fileName，注意这里的返回是不带分页的", dataType = "string", paramType = "query", required = true)
     @RequestMapping (value = "/listByCondition", method = RequestMethod.GET)
     JsonResult listByCondition(@RequestParam ("type") String type,
                                @RequestParam ("value") String value) {
@@ -287,14 +287,14 @@ public class DataResourceController implements BaseController<DataResource, Data
     }
 
     @RequestMapping (value = "/{id}/toGeoserver", method = RequestMethod.GET)
-    @ApiOperation (value = "将shapefile或者geotiff文件发布到geoserver中", notes = "")
+    @ApiOperation (value = "将shapefile、geotiff或sgrd文件发布到geoserver中", notes = "")
     JsonResult toGeoserver(@PathVariable ("id") String id) throws IOException {
         DataResource dataResource = dataResourceServiceImp.get(id);
         if (dataResource.isToGeoserver()) {
             //已发布服务
             return ResultUtils.success("该数据已发布为服务");
         }
-        String layerName;
+        String layerName="";
         if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE) {
             unZipFilesWithPrefixFilterSuffix(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
                     pathConfig.getShapefiles(),
@@ -307,6 +307,14 @@ public class DataResourceController implements BaseController<DataResource, Data
                     id,
                     null);
             layerName = geoserverService.createGeotiff(id);
+        }else if(dataResource.getType() == DataResourceTypeEnum.SGRD){
+            //将sgrd文件解压至 dataProcess 文件夹
+            String dirPath = pathConfig.getDataProcess() + File.separator + id+"_"+System.currentTimeMillis();
+            ZipUtils.unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
+                    dirPath);
+            //sgrd转tiff需要耗时
+            geoserverService.sgrdToGeotiff(id, dirPath);
+            layerName = geoserverService.createGeotiff(id);
         } else {
             throw new MyException(ResultEnum.NOTSUPPORT_GEOSERVER_ERROR);
         }
@@ -318,13 +326,13 @@ public class DataResourceController implements BaseController<DataResource, Data
     }
 
     @RequestMapping (value = "/{id}/getMeta", method = RequestMethod.GET)
-    @ApiOperation (value = "获取shapefile或者geotiff文件的meta", notes = "")
+    @ApiOperation (value = "获取shapefile、geotiff或sgrd文件的meta", notes = "")
     JsonResult getMeta(@PathVariable ("id") String id) throws IOException {
         DataResource dataResource = dataResourceServiceImp.get(id);
         if (dataResource.getMeta() != null) {
             return ResultUtils.success(dataResource.getMeta());
         }
-        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF) {
+        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF || dataResource.getType() == DataResourceTypeEnum.SGRD) {
             String metaString = dataResourceServiceImp.getMeta(dataResource);
             UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
             updateDataResourceDTO.setMeta(metaString);
