@@ -25,4 +25,5 @@ public class PathConfig {
     private String shapefiles;
     private String geotiffes;
     private String getMeta;
+    private String getGdal;
 }

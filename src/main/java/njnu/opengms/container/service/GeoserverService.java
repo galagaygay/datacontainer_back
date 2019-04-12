@@ -6,6 +6,8 @@ import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.enums.DataResourceTypeEnum;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
+import njnu.opengms.container.utils.MyFileUtils;
+import njnu.opengms.container.utils.ProcessUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -99,6 +101,32 @@ public class GeoserverService {
             throw new MyException(ResultEnum.REMOTE_SERVICE_ERROR);
         }
         return real_file.getName();
+    }
+
+
+    //使用gdal将sdat转换为tif数据
+    public void sdatToGeotiff(String id,String dir) throws IOException {
+        File gdalDir = new File(pathConfig.getGetGdal());
+        if(!gdalDir.exists()){
+            throw new MyException(ResultEnum.NO_GDAL_LIB);
+        }
+        //获取sdat文件的绝对路径
+        Collection<File> fileCollection = FileUtils.listFiles(new File(dir), new SuffixFileFilter(".sdat"), null);
+        File file = fileCollection.iterator().next();
+        String mgrdPath = file.getAbsolutePath();
+        if(mgrdPath.isEmpty()){
+            throw new MyException(ResultEnum.FILE_NOT_FOUND);
+        }
+        //获取mgrd文件名：
+        String sdatName = FilenameUtils.getBaseName(file.getName());
+//        String sdatName = mgrdPath.substring(mgrdPath.lastIndexOf(File.separator),mgrdPath.lastIndexOf("."));
+        //Tif 文件名
+        String tifName = id+"_"+sdatName;
+        String tifPath = pathConfig.getGeotiffes()+File.separator+tifName+".tif";
+        String[] cmd = {"cmd", "/C", ""};
+        String saga2tif_cmd = pathConfig.getGetGdal()+File.separator+"gdal_translate.exe -of SAGA "+"\""+mgrdPath+"\""+" -of GTiff "+"\""+tifPath+"\"";
+
+        ProcessUtils.callCmd(saga2tif_cmd);
     }
 
     public void delete(String id, DataResourceTypeEnum type) throws IOException {

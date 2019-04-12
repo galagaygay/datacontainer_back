@@ -11,8 +11,9 @@ public enum DataResourceTypeEnum {
     SHAPEFILE(0, "shapefile"),
     GEOTIFF(1, "geotiff"),
     UDX(2, "udx"),
-    OTHER(3, "other");
+    OTHER(3, "other"),
 
+    SDAT(4,"sdat");
 
     private int code;
     private String type;
