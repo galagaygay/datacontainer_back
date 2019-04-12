@@ -125,7 +125,7 @@ public class GeoserverService {
         String[] cmd = {"cmd", "/C", ""};
         String saga2tif_cmd = pathConfig.getGetGdal()+File.separator+"gdal_translate.exe -of SAGA "+"\""+mgrdPath+"\""+" -of GTiff "+"\""+tifPath+"\"";
 
-        ProcessUtils.callCmd(saga2tif_cmd);
+        ProcessUtils.exeCmd(saga2tif_cmd);
     }
 
     public void delete(String id, DataResourceTypeEnum type) throws IOException {
