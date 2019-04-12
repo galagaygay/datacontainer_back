@@ -6,7 +6,6 @@ import njnu.opengms.container.component.PathConfig;
 import njnu.opengms.container.enums.DataResourceTypeEnum;
 import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
-import njnu.opengms.container.utils.MyFileUtils;
 import njnu.opengms.container.utils.ProcessUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

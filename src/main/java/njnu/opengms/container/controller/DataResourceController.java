@@ -307,6 +307,14 @@ public class DataResourceController implements BaseController<DataResource, Data
                     id,
                     null);
             layerName = geoserverService.createGeotiff(id);
+        } else if (dataResource.getType() == DataResourceTypeEnum.SDAT) {
+            //将sdat文件解压至 dataProcess 文件夹
+            String dirPath = pathConfig.getDataProcess() + File.separator + id + "_" + System.currentTimeMillis();
+            ZipUtils.unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
+                    dirPath);
+            //sdat转tiff需要耗时
+            geoserverService.sdatToGeotiff(id, dirPath);
+            layerName = geoserverService.createGeotiff(id);
         } else {
             throw new MyException(ResultEnum.NOTSUPPORT_GEOSERVER_ERROR);
         }
@@ -324,7 +332,7 @@ public class DataResourceController implements BaseController<DataResource, Data
         if (dataResource.getMeta() != null) {
             return ResultUtils.success(dataResource.getMeta());
         }
-        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF) {
+        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF || dataResource.getType() == DataResourceTypeEnum.SDAT) {
             String metaString = dataResourceServiceImp.getMeta(dataResource);
             UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
             updateDataResourceDTO.setMeta(metaString);
