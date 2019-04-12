@@ -1,12 +1,5 @@
 package com.ngis.test;
 
-import njnu.opengms.container.getmeta.DataStoreMetaGet;
-import njnu.opengms.container.getmeta.impl.GeotiffMetaGet;
-import njnu.opengms.container.getmeta.impl.SgrdMetaGet;
-import njnu.opengms.container.getmeta.meta.GeotiffMeta;
-
-import java.io.File;
-
 /**
  * @ClassName Main
  * @Description todo
@@ -21,7 +14,7 @@ public class Main {
 //        DataStoreMetaGet metaGet = new GeotiffMetaGet();
 //        GeotiffMeta geotiffMeta = (GeotiffMeta) metaGet.getMeta(rasterFile);
 //        System.out.println(geotiffMeta.getName());
-//        SgrdMetaGet sgrdMetaGet = new SgrdMetaGet();
+//        SdatMetaGet sgrdMetaGet = new SdatMetaGet();
 //        sgrdMetaGet.getMeta(dir);
 //        String id = "5cade325a7a65a49b45acfef";
 

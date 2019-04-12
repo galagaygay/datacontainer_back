@@ -16,7 +16,7 @@ import java.util.Collection;
 /**
  * Created by SongJie on 2019/4/10 21:40
  */
-public class SgrdMetaGet implements DataStoreMetaGet<GeotiffMeta> {
+public class SdatMetaGet implements DataStoreMetaGet<GeotiffMeta> {
     @Override
     public GeotiffMeta getMeta(File file) throws IOException {
         GeotiffMeta geotiffMeta = new GeotiffMeta();

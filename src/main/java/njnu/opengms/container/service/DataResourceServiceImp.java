@@ -11,7 +11,7 @@ import njnu.opengms.container.enums.ResultEnum;
 import njnu.opengms.container.exception.MyException;
 import njnu.opengms.container.getmeta.DataStoreMetaGet;
 import njnu.opengms.container.getmeta.impl.GeotiffMetaGet;
-import njnu.opengms.container.getmeta.impl.SgrdMetaGet;
+import njnu.opengms.container.getmeta.impl.SdatMetaGet;
 import njnu.opengms.container.getmeta.impl.ShapefileMetaGet;
 import njnu.opengms.container.getmeta.meta.GeotiffMeta;
 import njnu.opengms.container.pojo.DataResource;
@@ -200,10 +200,10 @@ public class DataResourceServiceImp implements BaseService<DataResource, DataRes
             DataStoreMetaGet metaGet = new GeotiffMetaGet();
             jsonString = JSONObject.toJSONString(metaGet.getMeta(real_file));
             return jsonString;
-        }else if(dataResource.getType().equals(DataResourceTypeEnum.SGRD)){
+        }else if(dataResource.getType().equals(DataResourceTypeEnum.SDAT)){
             fileCollection = FileUtils.listFiles(dir, new SuffixFileFilter(".mgrd"), null);
             real_file = fileCollection.iterator().next();
-            DataStoreMetaGet metaGet = new SgrdMetaGet();
+            DataStoreMetaGet metaGet = new SdatMetaGet();
             GeotiffMeta meta = (GeotiffMeta) metaGet.getMeta(real_file);
             jsonString = JSONObject.toJSONString(meta);
             return jsonString;

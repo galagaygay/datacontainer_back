@@ -287,7 +287,7 @@ public class DataResourceController implements BaseController<DataResource, Data
     }
 
     @RequestMapping (value = "/{id}/toGeoserver", method = RequestMethod.GET)
-    @ApiOperation (value = "将shapefile、geotiff或sgrd文件发布到geoserver中", notes = "")
+    @ApiOperation (value = "将shapefile、geotiff或sdat文件发布到geoserver中", notes = "")
     JsonResult toGeoserver(@PathVariable ("id") String id) throws IOException {
         DataResource dataResource = dataResourceServiceImp.get(id);
         if (dataResource.isToGeoserver()) {
@@ -307,13 +307,13 @@ public class DataResourceController implements BaseController<DataResource, Data
                     id,
                     null);
             layerName = geoserverService.createGeotiff(id);
-        }else if(dataResource.getType() == DataResourceTypeEnum.SGRD){
-            //将sgrd文件解压至 dataProcess 文件夹
+        }else if(dataResource.getType() == DataResourceTypeEnum.SDAT){
+            //将sdat文件解压至 dataProcess 文件夹
             String dirPath = pathConfig.getDataProcess() + File.separator + id+"_"+System.currentTimeMillis();
             ZipUtils.unZipFiles(new File(pathConfig.getStoreFiles() + File.separator + dataResource.getSourceStoreId()),
                     dirPath);
-            //sgrd转tiff需要耗时
-            geoserverService.sgrdToGeotiff(id, dirPath);
+            //sdat转tiff需要耗时
+            geoserverService.sdatToGeotiff(id, dirPath);
             layerName = geoserverService.createGeotiff(id);
         } else {
             throw new MyException(ResultEnum.NOTSUPPORT_GEOSERVER_ERROR);
@@ -326,13 +326,13 @@ public class DataResourceController implements BaseController<DataResource, Data
     }
 
     @RequestMapping (value = "/{id}/getMeta", method = RequestMethod.GET)
-    @ApiOperation (value = "获取shapefile、geotiff或sgrd文件的meta", notes = "")
+    @ApiOperation (value = "获取shapefile、geotiff或sdat文件的meta", notes = "")
     JsonResult getMeta(@PathVariable ("id") String id) throws IOException {
         DataResource dataResource = dataResourceServiceImp.get(id);
         if (dataResource.getMeta() != null) {
             return ResultUtils.success(dataResource.getMeta());
         }
-        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF || dataResource.getType() == DataResourceTypeEnum.SGRD) {
+        if (dataResource.getType() == DataResourceTypeEnum.SHAPEFILE || dataResource.getType() == DataResourceTypeEnum.GEOTIFF || dataResource.getType() == DataResourceTypeEnum.SDAT) {
             String metaString = dataResourceServiceImp.getMeta(dataResource);
             UpdateDataResourceDTO updateDataResourceDTO = new UpdateDataResourceDTO();
             updateDataResourceDTO.setMeta(metaString);

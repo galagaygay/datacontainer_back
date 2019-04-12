@@ -13,7 +13,7 @@ public enum DataResourceTypeEnum {
     UDX(2, "udx"),
     OTHER(3, "other"),
 
-    SGRD(4,"sgrd");
+    SDAT(4,"sdat");
 
     private int code;
     private String type;
