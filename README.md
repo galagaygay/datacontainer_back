@@ -80,6 +80,7 @@
 1.gdal 
 - 下载并编译gdal
 - application.properties 文件夹下配置 path.getGdal 路径，如"${web.lib-path}/gdal/bin/gdal/apps"
+- 如果服务器报错："无法启动程序，计算机中丢失gdal111.dll……" 将 gdal/bin 目录下的 gdal111.dll 拷贝至exe所在目录（即gdal/bin/gdal/apps目录）
 
 # 编码问题
 
