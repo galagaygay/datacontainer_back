@@ -68,7 +68,7 @@ public class DataResourceController implements BaseController<DataResource, Data
     PathConfig pathConfig;
 
 
-    @ApiImplicitParam (name = "type", value = "type可以为author、mdl、dataItem、fileName，注意这里的返回是不带分页的", dataType = "string", paramType = "path", required = true)
+    @ApiImplicitParam (name = "type", value = "type可以为author、mdl、dataItem、fileName，注意这里的返回是不带分页的")
     @RequestMapping (value = "/listByCondition", method = RequestMethod.GET)
     JsonResult listByCondition(@RequestParam ("type") String type,
                                @RequestParam ("value") String value) {

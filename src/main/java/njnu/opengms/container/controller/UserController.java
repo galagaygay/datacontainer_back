@@ -41,4 +41,6 @@ public class UserController {
         String[] permission = {"super_admin", "admin"};
         return ResultUtils.success(permission);
     }
+
+
 }

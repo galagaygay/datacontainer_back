@@ -1,10 +1,7 @@
 package com.ngis.test;
 
-import njnu.opengms.container.getmeta.DataStoreMetaGet;
-import njnu.opengms.container.getmeta.impl.GeotiffMetaGet;
-import njnu.opengms.container.getmeta.meta.GeotiffMeta;
-
-import java.io.File;
+import io.jsonwebtoken.Claims;
+import njnu.opengms.container.utils.JwtUtils;
 
 /**
  * @ClassName Main
@@ -16,10 +13,9 @@ import java.io.File;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        File rasterFile = new File("F:\\dem30m.tif");
-        DataStoreMetaGet metaGet = new GeotiffMetaGet();
-        GeotiffMeta geotiffMeta = (GeotiffMeta) metaGet.getMeta(rasterFile);
-        System.out.println(geotiffMeta.getName());
+
+        String jwtToken = "Bearer " + JwtUtils.generateToken("5ca1eae9e11f18365443676c", "sunlingzhi", "e10adc3949ba59abbe56e057f20f883e");
+        Claims claims = JwtUtils.parseJWT(jwtToken);
 
 
     }
