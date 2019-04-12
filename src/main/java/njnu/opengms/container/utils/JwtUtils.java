@@ -19,7 +19,7 @@ import java.util.HashMap;
  * @Version 1.0.0
  */
 public class JwtUtils {
-    private static final long EXPIRATION_TIME = 7 * 12 * 3600 * 1000;
+    private static final long EXPIRATION_TIME = 24 * 3600 * 1000;
     private static final String SECRET = "hello";
     private static final String TOKEN_PREFIX = "Bearer";
 
